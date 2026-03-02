@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function VoipWebRTC() {
     const technologies = [
-        { icon: Server, title: "FreeSwitch, OpenSIPS & RTPEngine", desc: "Enterprise-grade scalable switching and robust SIP routing capable of handling thousands of concurrent sessions with absolute fault-tolerance and high-performance media proxying." },
+        { icon: Server, title: "FreeSwitch, OpenSIPS & RTPEngine", desc: "Enterprise-grade auto-scaling architectures and robust SIP routing capable of flawlessly handling from thousands to millions of concurrent sessions with absolute fault-tolerance and high-performance media proxying." },
         { icon: Smartphone, title: "Flexisip & Linphone Customization", desc: "Expert development and customization of Android and iOS mobile applications. Seamlessly supporting push notifications for highly optimized battery usage." },
         { icon: BrainCircuit, title: "AI Integration over SIP/WebRTC", desc: "Writing next-generation AI applications directly over your SIP and WebRTC infrastructure to automate workflows, reduce manual agent costs, and transcribe streams in real-time." },
         { icon: Activity, title: "Infra Monitoring & Cost Reduction", desc: "Complete infrastructure monitoring, automation, and measurable metrics. We consult and collaborate to dramatically reduce infrastructure costs and improve service reliability." }
