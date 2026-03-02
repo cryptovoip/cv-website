@@ -27,15 +27,7 @@ export default function Contact() {
                                 <p className="font-semibold">contact@cryptovoip.in</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
-                                <Phone className="text-primary w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-gray-400">Call Us</p>
-                                <p className="font-semibold">+1 (555) 123-4567</p>
-                            </div>
-                        </div>
+
                         <div className="flex items-center gap-4">
                             <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
                                 <MapPin className="text-primary w-5 h-5" />

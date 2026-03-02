@@ -8,16 +8,15 @@ export default function Footer() {
                     <div className="col-span-1 md:col-span-2">
                         <h3 className="text-2xl font-bold text-white mb-4">CryptoVoip</h3>
                         <p className="max-w-sm">
-                            We provide technology that thinks securely. Connect every CCTV brand,
-                            protect your video, and enhance your digital foundation with advanced AI.
+                            CryptoVoIP provides expert VoIP & WebRTC consulting, standalone AI-powered OpenNVR infrastructure, custom AI Voice & Video Bots, and completely offline CV MDM solutions tailored for critical sectors.
                         </p>
                     </div>
                     <div>
                         <h4 className="text-lg font-bold text-white mb-4">Quick Links</h4>
                         <ul className="space-y-2">
                             <li><Link href="/about-us" className="hover:text-primary transition">About Us</Link></li>
-                            <li><Link href="/solutions" className="hover:text-primary transition">Solutions</Link></li>
-                            <li><Link href="/mdm" className="hover:text-primary transition">MDM Product</Link></li>
+                            <li><Link href="/solutions" className="hover:text-primary transition">OpenNVR</Link></li>
+                            <li><Link href="/mdm" className="hover:text-primary transition">CV MDM</Link></li>
                             <li><Link href="/contact" className="hover:text-primary transition">Contact</Link></li>
                         </ul>
                     </div>
@@ -25,7 +24,6 @@ export default function Footer() {
                         <h4 className="text-lg font-bold text-white mb-4">Contact Info</h4>
                         <ul className="space-y-2">
                             <li>contact@cryptovoip.in</li>
-                            <li>+1 (555) 123-4567</li>
                         </ul>
                     </div>
                 </div>
