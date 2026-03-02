@@ -18,8 +18,8 @@ export default function Home() {
     },
     {
       badge: "Absolute Control",
-      title: "Completely Offline",
-      highlight: "Device Management",
+      title: "CV MDM",
+      highlight: "Platform",
       desc: "We provide on-premise, completely offline device management ensuring absolute security of your devices. Proven and flawlessly working in Captive Networks.",
       link: "/mdm"
     },

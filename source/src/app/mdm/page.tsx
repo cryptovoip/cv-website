@@ -38,7 +38,7 @@ export default function MDMProduct() {
                             Defense Grade Security
                         </span>
                         <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
-                            Unified Mobile <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-400">Device Management</span>
+                            CV MDM <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-400">Platform</span>
                         </h1>
                         <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto font-light leading-relaxed mb-10">
                             Not just another cloud MDM. A complete, offline-capable platform designed for critical infrastructure organizations demanding total control over their data and devices.
