@@ -1,15 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Server, Settings, ShieldCheck, PenTool, LayoutTemplate, Briefcase } from "lucide-react";
+import { Server, Settings, ShieldCheck, PenTool, LayoutTemplate, Briefcase, Smartphone, BrainCircuit, Activity } from "lucide-react";
 import Link from "next/link";
 
 export default function VoipWebRTC() {
     const technologies = [
-        { icon: Server, title: "FreeSwitch & OpenSIPS Infrastructure", desc: "Enterprise-grade scalable switching and robust SIP routing capable of handling thousands of concurrent sessions with absolute fault-tolerance." },
-        { icon: PenTool, title: "Custom Development & Design", desc: "Our expert team of heavily experienced industry developers can design, develop, customize, and tailor bespoke VoIP and WebRTC solutions." },
-        { icon: ShieldCheck, title: "Cybersecurity & Cost Optimization", desc: "We consult and collaborate to dramatically reduce infrastructure costs, improve service reliability, and secure your systems against modern cyber threats." },
-        { icon: Settings, title: "RTPEngine & Linphone Integration", desc: "High-performance media proxying ensuring crystal clear audio alongside custom SIP softphone development for all major platforms." }
+        { icon: Server, title: "FreeSwitch, OpenSIPS & RTPEngine", desc: "Enterprise-grade scalable switching and robust SIP routing capable of handling thousands of concurrent sessions with absolute fault-tolerance and high-performance media proxying." },
+        { icon: Smartphone, title: "Flexisip & Linphone Customization", desc: "Expert development and customization of Android and iOS mobile applications. Seamlessly supporting push notifications for highly optimized battery usage." },
+        { icon: BrainCircuit, title: "AI Integration over SIP/WebRTC", desc: "Writing next-generation AI applications directly over your SIP and WebRTC infrastructure to automate workflows, reduce manual agent costs, and transcribe streams in real-time." },
+        { icon: Activity, title: "Infra Monitoring & Cost Reduction", desc: "Complete infrastructure monitoring, automation, and measurable metrics. We consult and collaborate to dramatically reduce infrastructure costs and improve service reliability." }
     ];
 
     return (
@@ -25,7 +25,7 @@ export default function VoipWebRTC() {
                             Expert <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-400">VoIP & WebRTC</span> Development
                         </h1>
                         <p className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto font-light leading-relaxed mb-6">
-                            Win with the deep expertise we carry in this domain. We design, build, and deploy next-generation communication platforms.
+                            Win with the deep expertise we carry in this domain. We design, build, and deploy next-generation AI-enabled communication platforms.
                         </p>
                     </motion.div>
                 </div>
@@ -44,7 +44,7 @@ export default function VoipWebRTC() {
                         >
                             <tech.icon className="w-12 h-12 text-primary mb-6 group-hover:scale-110 transition-transform" />
                             <h3 className="text-2xl font-bold mb-3">{tech.title}</h3>
-                            <p className="text-gray-400 leading-relaxed">{tech.desc}</p>
+                            <p className="text-gray-400 leading-relaxed text-lg">{tech.desc}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -53,7 +53,7 @@ export default function VoipWebRTC() {
             <section className="w-full bg-primary py-20 mt-12">
                 <div className="max-w-4xl mx-auto px-4 text-center">
                     <h2 className="text-3xl md:text-5xl font-bold text-black mb-6">Speak around our portfolio</h2>
-                    <p className="text-black/70 text-lg mb-10">Demos can be quickly deployed to prove our concepts. Let's collaborate to reduce your costs and skyrocket performance.</p>
+                    <p className="text-black/70 text-lg mb-10">Demos can be quickly deployed to prove our concepts. Let's collaborate to reduce your costs, integrate modern AI over your SIP trunks, and skyrocket performance telemetry.</p>
                     <Link
                         href="/contact"
                         className="inline-flex items-center gap-2 bg-black text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-900 transition transform hover:scale-105 shadow-[0_0_20px_rgba(0,0,0,0.2)]"
