@@ -8,7 +8,7 @@ export default function Footer() {
                     <div className="col-span-1 md:col-span-2">
                         <h3 className="text-2xl font-bold text-white mb-4">CryptoVoip</h3>
                         <p className="max-w-sm">
-                            CryptoVoIP provides expert VoIP & WebRTC consulting, standalone AI-powered OpenNVR infrastructure, custom AI Voice & Video Bots, and completely offline CV MDM solutions tailored for critical sectors.
+                            CryptoVoIP developed the open-source OpenNVR platform and the completely offline CV MDM. Alongside our core products, we provide expert VoIP & WebRTC consulting services and custom Voice & Video Bot development. Hire the best industry consultants to win.
                         </p>
                     </div>
                     <div>
@@ -17,7 +17,6 @@ export default function Footer() {
                             <li><Link href="/about-us" className="hover:text-primary transition">About Us</Link></li>
                             <li><Link href="/solutions" className="hover:text-primary transition">OpenNVR</Link></li>
                             <li><Link href="/mdm" className="hover:text-primary transition">CV MDM</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition">Contact</Link></li>
                         </ul>
                     </div>
                     <div>
