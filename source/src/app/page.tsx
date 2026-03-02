@@ -31,10 +31,10 @@ export default function Home() {
       link: "/ai-bots"
     },
     {
-      badge: "18+ Years Expertise",
+      badge: "20+ Years Expertise",
       title: "VoIP & WebRTC",
       highlight: "Development",
-      desc: "Hire the best Industry SIP, VoIP, and WebRTC experts. Over 18 years of experience consulting to design and develop your next-gen communication services and infra.",
+      desc: "Hire the best Industry SIP, VoIP, and WebRTC experts. Deep industry experts with over 20 years of experience consulting to design and develop your next-gen communication services and infra.",
       link: "/voip-webrtc"
     }
   ];
@@ -149,7 +149,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold mb-3">VoIP & WebRTC</h3>
               <p className="text-gray-400">
-                Hire our 18+ years experienced consultants to expertly design, develop, and scale your FreeSwitch and OpenSIPS infrastructure.
+                Hire our industry experts with over 20+ years of experience to design, develop, and scale your FreeSwitch and OpenSIPS infrastructure.
               </p>
             </motion.div>
 
