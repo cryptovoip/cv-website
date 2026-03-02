@@ -18,7 +18,7 @@ export default function AIBots() {
                 <div className="absolute inset-0 bg-primary/10 blur-[150px] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none"></div>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
                     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                        <span className="inline-block flex items-center justify-center gap-2 py-1 px-4 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold mb-6 tracking-widest uppercase w-max mx-auto">
+                        <span className="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-primary/20 text-primary border border-primary/30 text-xs font-bold mb-6 tracking-widest uppercase">
                             <Mic className="w-4 h-4" /> Next-Gen Automation
                         </span>
                         <h1 className="text-5xl md:text-7xl font-extrabold mb-6">

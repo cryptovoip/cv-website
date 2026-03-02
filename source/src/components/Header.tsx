@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 
@@ -29,8 +30,15 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-              CryptoVoip
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/CryptoVoip.png"
+                alt="CryptoVoip Logo"
+                width={200}
+                height={50}
+                className="w-auto h-10 object-contain"
+                priority
+              />
             </Link>
           </div>
 
