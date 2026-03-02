@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #DCE735;
+  --color-dark-bg: #0B1B32;
+  --color-dark-nav: #050C17;
+}
+
+:root {
+  --background: #0B1B32;
+  --foreground: #ffffff;
+}
+
+body {
+  background: linear-gradient(135deg, #0B1B32 0%, #050C17 100%);
+  color: var(--foreground);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
