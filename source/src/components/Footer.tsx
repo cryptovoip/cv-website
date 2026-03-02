@@ -8,7 +8,7 @@ export default function Footer() {
                     <div className="col-span-1 md:col-span-2">
                         <h3 className="text-2xl font-bold text-white mb-4">CryptoVoip</h3>
                         <p className="max-w-sm">
-                            CryptoVoIP developed the open-source OpenNVR platform and the completely offline CV MDM. Alongside our core products, we provide expert VoIP & WebRTC consulting services and custom Voice & Video Bot development. Hire the best industry consultants to win.
+                            Alongside our core products, we provide expert VoIP & WebRTC consulting services and custom Voice & Video Bot development. Hire the best industry developers and consultants to win.
                         </p>
                     </div>
                     <div>

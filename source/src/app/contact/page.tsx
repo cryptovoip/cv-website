@@ -34,7 +34,7 @@ export default function Contact() {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-400">Headquarters</p>
-                                <p className="font-semibold">Cyber Hub, Tech District</p>
+                                <p className="font-semibold text-sm">Insta Office, DSquare Complex, 18, Roorkee Rd, Daurli, Meerut, Uttar Pradesh 250001</p>
                             </div>
                         </div>
                     </div>
