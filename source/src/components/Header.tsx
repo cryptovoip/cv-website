@@ -34,9 +34,9 @@ export default function Header() {
               <Image
                 src="/CryptoVoip.png"
                 alt="CryptoVoip Logo"
-                width={200}
-                height={50}
-                className="w-auto h-10 object-contain"
+                width={191}
+                height={66}
+                className="w-auto h-14 object-contain"
                 priority
               />
             </Link>
