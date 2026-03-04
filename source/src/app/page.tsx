@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { Shield, ArrowRight, Mic, Server, BookOpen } from "lucide-react";
+import { Shield, ArrowRight, Mic, Server, Smartphone } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Home() {
@@ -158,11 +158,11 @@ export default function Home() {
               className="bg-dark-bg border border-white/10 p-8 rounded-2xl hover:border-primary/50 transition-colors shadow-lg group"
             >
               <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <BookOpen className="w-8 h-8 text-primary" />
+                <Smartphone className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Practical Trainings</h3>
+              <h3 className="text-2xl font-bold mb-3">CV MDM</h3>
               <p className="text-gray-400">
-                Empower your team with expert guidance. Comprehensive programs covering VoIP integration and Pipecat bot generation.
+                Ensure absolute security and control for your devices with our completely offline mdm, support on-premise deployment, engineered flawlessly for Captive Networks.
               </p>
             </motion.div>
           </div>
