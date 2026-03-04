@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CryptoVoip Technologies | AI, Security & Innovation",
-  description: "CryptoVoIP provides expert VoIP & SIP Consultancy, OpenNVR for IP security, offline CV MDM, and custom AI Voice & Video Bots. We provide technology that thinks securely.",
+  description: "CryptoVoIP provides expert VoIP & SIP Consultancy, OpenNVR for IP security, offline CV MDM, custom AI Voice & Video Bots, and RAG/MCP Servers. We provide technology that thinks securely.",
 };
 
 export default function RootLayout({

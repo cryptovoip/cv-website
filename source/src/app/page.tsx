@@ -25,7 +25,7 @@ export default function Home() {
     },
     {
       badge: "Next-Gen Automation",
-      title: "Audio & Video",
+      title: "Voice & Video",
       highlight: "Bots",
       desc: "Custom RAG and MCP-based Pipecat voice and video bots. Integrate instantly with popular CRMs for seamless, low-latency automated workflows.",
       link: "/ai-bots"
@@ -134,7 +134,7 @@ export default function Home() {
               <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <Mic className="w-8 h-8 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Audio & Video Bots</h3>
+              <h3 className="text-2xl font-bold mb-3">Voice & Video Bots</h3>
               <p className="text-gray-400">
                 Custom low-latency Pipecat bots with RAG and MCP pipelines, directly integrated into your CRMs to generate revenue seamlessly.
               </p>

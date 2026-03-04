@@ -22,10 +22,10 @@ export default function AIBots() {
                             <Mic className="w-4 h-4" /> Next-Gen Automation
                         </span>
                         <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
-                            AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-400">Audio & Video</span> Bots
+                            AI <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-green-400">Voice & Video</span> Bots
                         </h1>
                         <p className="text-xl md:text-2xl text-gray-300 max-w-3xl mx-auto font-light leading-relaxed mb-4">
-                            We develop and deliver custom, scalable Audio and Video bots using state-of-the-art frameworks.
+                            We construct custom, scalable Voice and Video bots alongside developing bespoke RAG Pipelines and MCP servers from the ground up to power them.
                         </p>
                         <p className="text-lg text-gray-400 max-w-2xl mx-auto">
                             Stop clicking buttons and start generating revenue. From low-latency providers to complete custom control, we build the infrastructure you need to win.
