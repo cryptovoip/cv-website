@@ -3,12 +3,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Phone } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const VoiceWidget = dynamic(() => import("./VoiceWidget").then(m => m.VoiceWidget), { ssr: false });
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -115,12 +119,12 @@ export default function Header() {
               Contact
             </Link>
 
-            <Link
-              href="/contact"
-              className="mt-[-4px] bg-primary text-black px-5 py-2 rounded-full font-bold hover:bg-primary/90 transition-all transform hover:scale-105"
+            <button
+              onClick={() => setIsVoiceOpen(true)}
+              className="mt-[-4px] flex items-center gap-2 bg-primary text-black px-5 py-2 rounded-full font-bold hover:bg-primary/90 transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(220,231,53,0.3)]"
             >
-              Talk To Us
-            </Link>
+              Talk To Us <Phone className="w-4 h-4" />
+            </button>
           </nav>
 
           <div className="md:hidden flex items-center">
@@ -187,6 +191,22 @@ export default function Header() {
             <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-xl font-medium text-gray-300 hover:text-primary">
               Contact
             </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Global Voice Bot Modal Overlay */}
+      {isVoiceOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsVoiceOpen(false)}></div>
+          <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
+            <button
+              onClick={() => setIsVoiceOpen(false)}
+              className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-110"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <VoiceWidget />
           </div>
         </div>
       )}
