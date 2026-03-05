@@ -2,6 +2,7 @@ import asyncio
 import os
 import sys
 import aiohttp
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -70,13 +71,47 @@ async def main():
             Your instructions:
             - Be concise, professional, and slightly enthusiastic.
             - Answer questions briefly. Do not read out bullet points. Keep it conversational.
-            - If a user asks to contact human support or requires deep technical quotes, instruct them to email `contact@cryptovoip.in` or offer to connect them via Linphone SIP URI.
+            - If a user explicitly asks to speak to a real human, tell them you are transferring them, then call the `transfer_to_human` tool immediately. Do not hesitate.
             - If they specifically ask for RAG/MCP pipelines, inform them CryptoVoIP builds the backend servers and edge architectures natively.
             """
         }
     ]
 
-    # 4. Construct the Pipeline
+    # 4. Define and Register SIP Transfer Tool
+    async def transfer_to_human(
+        function_name: str, tool_call_id: str, args: dict, llm: OpenAILLMService, context, result_callback
+    ):
+        await result_callback("Transferring the user to a human agent now.")
+        
+        try:
+            # Tell the bot to say a transfer message
+            messages.append({"role": "system", "content": "Acknowledge the transfer politely like 'Hold on securely while I connect you to a human expert.' and then say nothing else."})
+            await llm.process_messages(messages)
+            
+            # Allow TTS to finish playing
+            await asyncio.sleep(4)
+            
+            # The Daily room dials out to the Linphone SIP URI
+            # This requires Daily SIP config, but creates a seamless WebRTC-to-SIP bridge!
+            room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
+            headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
+            payload = {"sipEndpoint": "sip:agent@cryptovoip.in"} # The agent's Linphone URI
+            requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialout", headers=headers, json=payload)
+            
+            # Gracefully disconnect the bot so it doesn't eavesdrop!
+            await transport.cleanup()
+            sys.exit(0)
+            
+        except Exception as e:
+            print(f"SIP Transfer Error: {e}")
+
+    llm.register_function(
+        "transfer_to_human",
+        transfer_to_human,
+        description="Transfers the call to a human SIP Linphone agent when the user explicitly requests one."
+    )
+
+    # 5. Construct the Pipeline
     # Listen -> Transcribe -> LLM Processing -> Speak -> Send to Transport
     pipeline = Pipeline([
         transport.input(),
