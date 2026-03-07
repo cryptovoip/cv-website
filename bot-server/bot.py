@@ -81,6 +81,7 @@ async def main():
     async def transfer_to_human(
         function_name: str, tool_call_id: str, args: dict, llm: OpenAILLMService, context, result_callback
     ):
+        """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
         await result_callback("Transferring the user to a human agent now.")
         
         try:
@@ -93,7 +94,7 @@ async def main():
             
             # The Daily room dials out to the Linphone SIP URI
             # This requires Daily SIP config, but creates a seamless WebRTC-to-SIP bridge!
-            room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
+            room_name = transport.room_name if hasattr(transport, "room_name") else args[0].split("/")[-1] if isinstance(args, tuple) else "default"
             headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
             payload = {"sipEndpoint": "sip:agent@cryptovoip.in"} # The agent's Linphone URI
             requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialout", headers=headers, json=payload)
@@ -107,8 +108,7 @@ async def main():
 
     llm.register_function(
         "transfer_to_human",
-        transfer_to_human,
-        description="Transfers the call to a human SIP Linphone agent when the user explicitly requests one."
+        transfer_to_human
     )
 
     # 5. Construct the Pipeline
