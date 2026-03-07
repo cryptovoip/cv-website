@@ -15,12 +15,14 @@ from pipecat.services.cartesia.tts import CartesiaTTSService
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.processors.audio.vad_processor import VADProcessor
 
 import argparse
 
 async def main():
     parser = argparse.ArgumentParser(description="CryptoVoIP RTVI Pipecat Bot")
     parser.add_argument("-u", type=str, help="Room URL")
+    parser.add_argument("-t", type=str, help="Room Token", default=None)
     args, _ = parser.parse_known_args()
     
     if not args.u:
@@ -30,14 +32,15 @@ async def main():
     # 1. Transport Layer (WebRTC via Daily)
     transport = DailyTransport(
         room_url=args.u,
-        token=os.getenv("DAILY_API_KEY"),
+        token=args.t,
         bot_name="CryptoVoIP Rep",
         params=DailyParams(
+            audio_in_enabled=True,
             audio_out_enabled=True,
-            vad_enabled=True,
-            vad_analyzer=SileroVADAnalyzer(),
         )
     )
+    
+    vad_processor = VADProcessor(vad_analyzer=SileroVADAnalyzer())
 
     # 2. Services Initialization
     # IMPORTANT: The user wants this to be LLM agnostic.
@@ -78,23 +81,21 @@ async def main():
     ]
 
     # 4. Define and Register SIP Transfer Tool
-    async def transfer_to_human(
-        function_name: str, tool_call_id: str, args: dict, llm: OpenAILLMService, context, result_callback
-    ):
+    async def transfer_to_human(call_params):
         """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
-        await result_callback("Transferring the user to a human agent now.")
+        await call_params.result_callback("Transferring the user to a human agent now.")
         
         try:
             # Tell the bot to say a transfer message
             messages.append({"role": "system", "content": "Acknowledge the transfer politely like 'Hold on securely while I connect you to a human expert.' and then say nothing else."})
-            await llm.process_messages(messages)
+            await call_params.llm.process_messages(messages)
             
             # Allow TTS to finish playing
             await asyncio.sleep(4)
             
             # The Daily room dials out to the Linphone SIP URI
             # This requires Daily SIP config, but creates a seamless WebRTC-to-SIP bridge!
-            room_name = transport.room_name if hasattr(transport, "room_name") else args[0].split("/")[-1] if isinstance(args, tuple) else "default"
+            room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
             headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
             payload = {"sipEndpoint": "sip:agent@cryptovoip.in"} # The agent's Linphone URI
             requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialout", headers=headers, json=payload)
@@ -115,6 +116,7 @@ async def main():
     # Listen -> Transcribe -> LLM Processing -> Speak -> Send to Transport
     pipeline = Pipeline([
         transport.input(),
+        vad_processor,
         stt,
         llm,
         tts,

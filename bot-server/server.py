@@ -72,11 +72,22 @@ async def connect(request: Request):
         token_res.raise_for_status()
         user_token = token_res.json()["token"]
 
-        # 5. Spin up the Pipecat Bot process in the background
-        # Pass the room_url to the bot so it knows where to connect
-        subprocess.Popen([sys.executable, "bot.py", "-u", room_url])
+        # 5. Generate a separate token for the Bot to join
+        bot_token_payload = {
+            "properties": {
+                "room_name": room_data["name"],
+                "is_owner": True
+            }
+        }
+        bot_token_res = requests.post("https://api.daily.co/v1/meeting-tokens", headers=headers, json=bot_token_payload)
+        bot_token_res.raise_for_status()
+        bot_token = bot_token_res.json()["token"]
 
-        # 6. Return WebRTC handshake to the RTVI React SDK
+        # 6. Spin up the Pipecat Bot process in the background
+        # Pass the room_url and bot_token to the bot so it knows where to connect
+        subprocess.Popen([sys.executable, "bot.py", "-u", room_url, "-t", bot_token])
+
+        # 7. Return WebRTC handshake to the RTVI React SDK
         return JSONResponse({
             "room_url": room_url,
             "token": user_token
