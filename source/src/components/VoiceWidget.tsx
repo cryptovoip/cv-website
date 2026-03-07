@@ -7,7 +7,7 @@ import { RTVIClientProvider, RTVIClientAudio, useRTVIClient, useRTVIClientEvent 
 import { Mic, MicOff, PhoneOff, Loader2, Bot, Play } from "lucide-react";
 
 // We fallback to localhost if the env var isn't set, exactly as per the implementation plan
-const BOT_BACKEND_URL = process.env.NEXT_PUBLIC_BOT_BACKEND_URL || "http://localhost:8000/connect";
+const BOT_BACKEND_URL = process.env.NEXT_PUBLIC_BOT_BACKEND_URL || "http://localhost:8000";
 
 // 1. Initialize the RTVI Client globally outside the component
 const transport = new DailyTransport();
@@ -15,6 +15,9 @@ export const voiceClient = new RTVIClient({
     transport,
     params: {
         baseUrl: BOT_BACKEND_URL,
+        endpoints: {
+            connect: "/connect"
+        }
     },
     enableMic: true,
     enableCam: false,
