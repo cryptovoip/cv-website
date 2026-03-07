@@ -63,7 +63,7 @@ async def main():
     # TTS -> Cartesia is incredible for sub-100ms conversational audio
     tts = CartesiaTTSService(
         api_key=os.getenv("CARTESIA_API_KEY"),
-        voice_id="a0e99841-438c-4a64-b6a9-ae0f17769133" # Friendly British/American male
+        voice_id="79a125e8-cd45-4c13-8a67-188112f4dd22" # Friendly British male
     )
 
     # 3. Knowledge Base Context (System Prompt)
