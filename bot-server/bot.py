@@ -12,8 +12,8 @@ from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineTask, PipelineParams
 from pipecat.services.openai.llm import OpenAILLMService
 from pipecat.services.cartesia.tts import CartesiaTTSService
-from pipecat.services.deepgram import DeepgramSTTService
-from pipecat.transports.services.daily import DailyParams, DailyTransport
+from pipecat.services.deepgram.stt import DeepgramSTTService
+from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 
 import argparse
@@ -21,7 +21,7 @@ import argparse
 async def main():
     parser = argparse.ArgumentParser(description="CryptoVoIP RTVI Pipecat Bot")
     parser.add_argument("-u", type=str, help="Room URL")
-    args = parser.parse_parser_args()
+    args, _ = parser.parse_known_args()
     
     if not args.u:
         print("Missing Daily room URL argument.")
