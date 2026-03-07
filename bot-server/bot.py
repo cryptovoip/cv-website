@@ -16,6 +16,13 @@ from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
+from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
+from pipecat.frames.frames import LLMMessagesFrame
+from pipecat.services.deepgram.stt import DeepgramSTTService
+from pipecat.transports.daily.transport import DailyParams, DailyTransport
+from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.processors.audio.vad_processor import VADProcessor
 
 import argparse
 
@@ -80,6 +87,9 @@ async def main():
         }
     ]
 
+    context = LLMContext(messages)
+    context_aggregator = LLMContextAggregatorPair(context)
+
     # 4. Define and Register SIP Transfer Tool
     async def transfer_to_human(call_params):
         """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
@@ -87,8 +97,7 @@ async def main():
         
         try:
             # Tell the bot to say a transfer message
-            messages.append({"role": "system", "content": "Acknowledge the transfer politely like 'Hold on securely while I connect you to a human expert.' and then say nothing else."})
-            await call_params.llm.process_messages(messages)
+            await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Acknowledge the transfer politely like 'Hold on securely while I connect you to a human expert.' and then say nothing else."}])])
             
             # Allow TTS to finish playing
             await asyncio.sleep(4)
@@ -118,9 +127,11 @@ async def main():
         transport.input(),
         vad_processor,
         stt,
+        context_aggregator.user(),
         llm,
         tts,
         transport.output(),
+        context_aggregator.assistant(),
     ])
 
     task = PipelineTask(pipeline, params=PipelineParams(allow_interruptions=True))
@@ -129,9 +140,8 @@ async def main():
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         # Fire the initial greeting so the bot speaks first
-        transport.capture_participant_transcription(participant["id"])
-        messages.append({"role": "system", "content": "Please introduce yourself as the CryptoVoIP voice assistant and ask how you can help."})
-        await llm.process_messages(messages)
+        await transport.capture_participant_transcription(participant["id"])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself as the CryptoVoIP voice assistant and ask how you can help."}])])
 
     # 5. Execute Runner (Hard Timeout inside Runner or Server layer)
     runner = PipelineRunner()
