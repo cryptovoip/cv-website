@@ -106,7 +106,7 @@ async def main():
             # This requires Daily SIP config, but creates a seamless WebRTC-to-SIP bridge!
             room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
             headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
-            payload = {"sipEndpoint": "sip:agent@cryptovoip.in"} # The agent's Linphone URI
+            payload = {"sipEndpoint": "sip:varunps20033@sip.linphone.org"} # The agent's Linphone URI
             requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialout", headers=headers, json=payload)
             
             # Gracefully disconnect the bot so it doesn't eavesdrop!
