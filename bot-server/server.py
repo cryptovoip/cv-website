@@ -53,7 +53,8 @@ async def connect(request: Request):
         # Rooms expire automatically after 5 minutes for security & cost control
         room_payload = {
             "properties": {
-                "exp": int(os.popen('date +%s').read().strip()) + (5 * 60)
+                "exp": int(os.popen('date +%s').read().strip()) + (5 * 60),
+                "enable_dialout": True
             }
         }
         
