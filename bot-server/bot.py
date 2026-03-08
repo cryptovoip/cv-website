@@ -87,7 +87,22 @@ async def main():
         }
     ]
 
-    context = LLMContext(messages)
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "transfer_to_human",
+                "description": "Transfers the call to a human SIP Linphone agent when the user explicitly requests one. Call this immediately when they ask.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            }
+        }
+    ]
+
+    context = LLMContext(messages, tools)
     context_aggregator = LLMContextAggregatorPair(context)
 
     # 4. Define and Register SIP Transfer Tool
