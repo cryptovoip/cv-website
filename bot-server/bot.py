@@ -24,6 +24,7 @@ from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
+from pipecat.services.llm_service import FunctionCallParams
 
 import argparse
 
@@ -89,9 +90,9 @@ async def main():
     ]
 
     # 4. Define and Register SIP Transfer Tool
-    async def transfer_to_human(call_params):
+    async def transfer_to_human(params: FunctionCallParams):
         """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
-        await call_params.result_callback("Transferring the user to a human agent now.")
+        await params.result_callback("Transferring the user to a human agent now.")
         
         try:
             # Tell the bot to say a transfer message
