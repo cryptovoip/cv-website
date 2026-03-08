@@ -53,12 +53,16 @@ async def connect(request: Request):
         # Rooms expire automatically after 5 minutes for security & cost control
         room_payload = {
             "properties": {
-                "exp": int(os.popen('date +%s').read().strip()) + (5 * 60)
+                "exp": int(os.popen('date +%s').read().strip()) + (5 * 60),
+                "enable_dialout": True
             }
         }
         
         res = requests.post("https://api.daily.co/v1/rooms", headers=headers, json=room_payload)
-        res.raise_for_status()
+        if res.status_code != 200:
+            print(f"Daily Room API Error: {res.status_code} - {res.text}", flush=True)
+            res.raise_for_status()
+            
         room_data = res.json()
         room_url = room_data["url"]
 
