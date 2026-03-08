@@ -23,6 +23,7 @@ from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
+from pipecat.adapters.schemas.tools_schema import ToolsSchema
 
 import argparse
 
@@ -87,24 +88,6 @@ async def main():
         }
     ]
 
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "transfer_to_human",
-                "description": "Transfers the call to a human SIP Linphone agent when the user explicitly requests one. Call this immediately when they ask.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {},
-                    "required": []
-                }
-            }
-        }
-    ]
-
-    context = LLMContext(messages, tools)
-    context_aggregator = LLMContextAggregatorPair(context)
-
     # 4. Define and Register SIP Transfer Tool
     async def transfer_to_human(call_params):
         """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
@@ -137,6 +120,10 @@ async def main():
             
         except Exception as e:
             print(f"SIP Transfer Error: {e}")
+
+    tools = ToolsSchema(standard_tools=[transfer_to_human])
+    context = LLMContext(messages, tools)
+    context_aggregator = LLMContextAggregatorPair(context)
 
     llm.register_function(
         "transfer_to_human",
