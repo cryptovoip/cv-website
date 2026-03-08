@@ -107,10 +107,7 @@ async def main():
             headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
             payload = {
                 "sipUri": "sip:varunps20033@sip.linphone.org",
-                "video": False,
-                "config": {
-                    "allow_room_start": True
-                }
+                "video": False
             }
             res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
             print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
