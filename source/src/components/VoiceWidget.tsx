@@ -23,16 +23,16 @@ export const voiceClient = new RTVIClient({
     enableCam: false,
 });
 
-export function VoiceWidget() {
+export function VoiceWidget({ onClose }: { onClose?: () => void }) {
     return (
         <RTVIClientProvider client={voiceClient}>
-            <VoiceInterface />
+            <VoiceInterface onClose={onClose} />
             <RTVIClientAudio />
         </RTVIClientProvider>
     );
 }
 
-function VoiceInterface() {
+function VoiceInterface({ onClose }: { onClose?: () => void }) {
     const client = useRTVIClient();
     const [status, setStatus] = useState<"idle" | "connecting" | "connected" | "speaking" | "error">("idle");
     const [isMuted, setIsMuted] = useState(false);
@@ -76,6 +76,15 @@ function VoiceInterface() {
     const handleDisconnect = useCallback(() => {
         client?.disconnect();
         setStatus("idle");
+        if (onClose) onClose();
+    }, [client, onClose]);
+
+    useEffect(() => {
+        return () => {
+            if (client?.state !== "disconnected") {
+                client?.disconnect();
+            }
+        };
     }, [client]);
 
     const toggleMic = useCallback(() => {
@@ -120,10 +129,23 @@ function VoiceInterface() {
                             placeholder="your@email.com"
                         />
                     </div>
-                    <button type="submit" className="w-full bg-primary text-black font-bold py-3 rounded-xl hover:bg-primary/90 transition flex items-center justify-center gap-2">
-                        <Play className="w-4 h-4" /> Start Call
-                    </button>
+                    <div className="flex gap-3">
+                        {onClose && (
+                            <button type="button" onClick={onClose} className="w-full bg-white/10 text-white font-bold py-3 rounded-xl hover:bg-white/20 transition">
+                                Cancel
+                            </button>
+                        )}
+                        <button type="submit" className="w-full bg-primary text-black font-bold py-3 rounded-xl hover:bg-primary/90 transition flex items-center justify-center gap-2">
+                            <Play className="w-4 h-4" /> Start Call
+                        </button>
+                    </div>
                 </form>
+
+                <div className="mt-6 text-xs text-gray-400 text-center space-y-2">
+                    <p><span className="text-primary font-bold">💡 Pro Tip:</span> Say "Transfer to human" at any time to connect with a live agent.</p>
+                    <p>🔒 Your email is never recorded or shared without your permission.</p>
+                    <p>📅 You can also ask the bot to book an appointment with our team.</p>
+                </div>
             </div>
         );
     }

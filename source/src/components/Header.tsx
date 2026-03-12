@@ -206,7 +206,7 @@ export default function Header() {
             >
               <X className="w-6 h-6" />
             </button>
-            <VoiceWidget />
+            <VoiceWidget onClose={() => setIsVoiceOpen(false)} />
           </div>
         </div>
       )}
