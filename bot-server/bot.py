@@ -308,8 +308,8 @@ async def main():
         await params.result_callback("Transferring the user to a human agent now.")
         
         try:
-            # Explicitly tell the user to hold before bridging
-            await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please say exactly: 'Please hold for a moment while I transfer you.'"}])])
+            # Instruct the AI to dynamically acknowledge the transfer in its own voice
+            await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user requested a human transfer. Please acknowledge this politely and professionally, indicating you are connecting them to an expert now. Keep it brief."}])])
             
             # Allow the LLM's TTS sentence to finish playing
             await asyncio.sleep(4)
