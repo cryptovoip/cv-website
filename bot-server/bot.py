@@ -3,6 +3,8 @@ import os
 import sys
 import aiohttp
 import requests
+import smtplib
+from email.message import EmailMessage
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -90,9 +92,9 @@ async def main():
 
         When the call begins, greet the caller with:
 
-        "Welcome to CryptoVoIP Technologies. I'm the AI voice assistant built by our engineering team to demonstrate our real-time voice bot technology.
+        "Welcome to CryptoVoIP Technologies. I'm the AI voice assistant built inhouse. Contact us for your Voice Bots & Agentic AI Solutions.
 
-        We develop advanced voice and video bots, VoIP infrastructure, and secure device platforms.
+        We develop advanced voice and video bots, VoIP infrastructure, Mobile Device management & IP Camera Security & AI Solutions.
 
         If you'd like to speak with our team at any time, just say 'transfer to human'. You can also ask about our products or schedule a demo.
 
@@ -263,6 +265,25 @@ async def main():
         No personal information such as email or phone number is stored unless the caller explicitly agrees to share it.
 
         ------------------------------------------------
+        CALLBACK REQUEST
+        ------------------------------------------------
+
+        If a caller asks for a callback OR if you inform them that agents are busy, you MUST ask for their details for the callback.
+        
+        Collect these details organically:
+        • Name (Required)
+        • Email Address (Required)
+        • Phone number (Optional)
+        • Company Name (Optional)
+        • Reason (Optional)
+
+        Once you have collected the required details (Name and Email), immediately call the tool:
+        
+        send_callback_email
+
+        And kindly let the user know their request has been recorded.
+
+        ------------------------------------------------
         TRANSFER TO HUMAN
         ------------------------------------------------
 
@@ -302,7 +323,31 @@ async def main():
         }
     ]
 
-    # 4. Define and Register SIP Transfer Tool
+    # 4. Define and Register Tools
+    call_state = {"sip_agent_joined": False}
+
+    async def sip_transfer_watcher():
+        await asyncio.sleep(4)
+        room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
+        headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
+        payload = {
+            "sipUri": "sip:varunps20033@sip.linphone.org",
+            "video": False
+        }
+        res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
+        print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
+        
+        call_state["sip_agent_joined"] = False
+        for _ in range(25):
+            if call_state["sip_agent_joined"]:
+                print("SIP agent joined. Exiting bot.")
+                await transport.cleanup()
+                sys.exit(0)
+            await asyncio.sleep(1)
+        
+        print("SIP agent did not join. Asking for callback.")
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent did not answer the transfer. Apologize to the user that agents are busy, and ask if they would like to leave their details (Name, Email, optional Phone, Company, Reason) for a callback."}])])
+
     async def transfer_to_human(params: FunctionCallParams):
         """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
         await params.result_callback("Transferring the user to a human agent now.")
@@ -311,34 +356,70 @@ async def main():
             # Instruct the AI to dynamically acknowledge the transfer in its own voice
             await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user requested a human transfer. Please acknowledge this politely and professionally, indicating you are connecting them to an expert now. Keep it brief."}])])
             
-            # Allow the LLM's TTS sentence to finish playing
-            await asyncio.sleep(4)
-            
-            # The Daily room dials out to the Linphone SIP URI
-            # This requires Daily SIP config, but creates a seamless WebRTC-to-SIP bridge!
-            room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
-            headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
-            payload = {
-                "sipUri": "sip:varunps20033@sip.linphone.org",
-                "video": False
-            }
-            res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
-            print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
-            
-            # Gracefully disconnect the bot so it doesn't eavesdrop!
-            await transport.cleanup()
-            sys.exit(0)
+            asyncio.create_task(sip_transfer_watcher())
             
         except Exception as e:
             print(f"SIP Transfer Error: {e}")
 
-    tools = ToolsSchema(standard_tools=[transfer_to_human])
+    async def send_callback_email(params: FunctionCallParams):
+        """Sends an email with the user's callback details."""
+        args_dict = params.arguments
+        name = args_dict.get("name", "Unknown")
+        email_addr = args_dict.get("email_address", "Unknown")
+        phone = args_dict.get("phone_number", "Not provided")
+        company = args_dict.get("company_name", "Not provided")
+        reason = args_dict.get("reason", "Not provided")
+
+        msg = EmailMessage()
+        msg['Subject'] = f"Callback Request from {name}"
+        msg['From'] = os.getenv("SMTP_USER", "bot@cryptovoip.in")
+        msg['To'] = "contact@cryptovoip.in"
+
+        content = f"New callback request received from the voice bot:\n\n"
+        content += f"Name: {name}\n"
+        content += f"Email: {email_addr}\n"
+        content += f"Phone: {phone}\n"
+        content += f"Company: {company}\n"
+        content += f"Reason: {reason}\n"
+
+        msg.set_content(content)
+
+        smtp_server = os.getenv("SMTP_SERVER", "cryptovoip.in")
+        smtp_port = int(os.getenv("SMTP_PORT", "465"))
+        smtp_user = os.getenv("SMTP_USER", "bot@cryptovoip.in")
+        smtp_pass = os.getenv("SMTP_PASS")
+
+        if smtp_user and smtp_pass:
+            try:
+                if smtp_port == 465:
+                    with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+                        server.login(smtp_user, smtp_pass)
+                        server.send_message(msg)
+                else:
+                    with smtplib.SMTP(smtp_server, smtp_port) as server:
+                        server.starttls()
+                        server.login(smtp_user, smtp_pass)
+                        server.send_message(msg)
+                print(f"Callback email sent to contact@cryptovoip.in for {name}")
+            except Exception as e:
+                print(f"Failed to send email: {e}")
+        else:
+            print("SMTP credentials missing. Callback details recorded:")
+            print(content)
+
+        await params.result_callback("Callback request recorded. Let the user know you have noted their details and our team will reach out soon.")
+
+    tools = ToolsSchema(standard_tools=[transfer_to_human, send_callback_email])
     context = LLMContext(messages, tools)
     context_aggregator = LLMContextAggregatorPair(context)
 
     llm.register_function(
         "transfer_to_human",
         transfer_to_human
+    )
+    llm.register_function(
+        "send_callback_email",
+        send_callback_email
     )
 
     # 5. Construct the Pipeline
@@ -357,6 +438,11 @@ async def main():
     task = PipelineTask(pipeline, params=PipelineParams(allow_interruptions=True))
     
     # Register events
+    @transport.event_handler("on_participant_joined")
+    async def on_participant_joined(transport, participant):
+        if participant.get("info", {}).get("isRemote"):
+            call_state["sip_agent_joined"] = True
+
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         # Fire the initial greeting so the bot speaks first
