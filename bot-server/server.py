@@ -25,7 +25,7 @@ if not DAILY_API_KEY:
 
 # Basic in-memory rate limiting (IP -> count)
 rate_limit_cache = {}
-MAX_CALLS_PER_DAY = 3
+MAX_CALLS_PER_DAY = 100
 
 @app.post("/connect")
 async def connect(request: Request):
