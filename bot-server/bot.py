@@ -266,7 +266,9 @@ async def main():
         
         send_callback_email(name="User Name", email_address="user@email.com", ...)
 
-        After the tool returns, tell the user: "Our team will contact you soon. Do you need more information?"
+        After the tool returns, tell the user: "Our team will contact you soon. Goodbye!" and immediately call:
+        
+        end_call
 
         ------------------------------------------------
         ENDING THE CALL
@@ -409,7 +411,7 @@ async def main():
             print("SMTP credentials missing. Callback details recorded:")
             print(content)
 
-        await params.result_callback("Callback request successfully recorded. Tell the user exactly: 'Our team will contact you soon. Do you need any more information?'")
+        await params.result_callback("Callback request successfully recorded. Tell the user: 'Our team will contact you soon. Goodbye!' Then immediately call the 'end_call' tool to hang up.")
 
     async def end_call(params: FunctionCallParams):
         """Ends the active voice session when the user is finished the conversation. Call this only when the user explicitly has no more questions and wants to hang up."""
