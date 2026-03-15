@@ -139,6 +139,7 @@ async def main():
         • Integration of Flexisip push notification server
         • Secure, enterprise-grade SIP communication apps
         • White-label mobile VoIP solutions
+        • Flexisip push notifications server setup and configuration
 
         ------------------------------------------------
         CV MDM – Defense Grade Mobile Device Management
@@ -192,43 +193,54 @@ async def main():
         }
     ]
 
-    call_state = {"sip_agent_joined": False}
+    call_state = {
+        "sip_agent_joined": False,
+        "transfer_in_progress": False
+    }
 
     async def sip_transfer_watcher():
+        # Small delay to allow the LLM to finish speaking "Connecting you..."
         await asyncio.sleep(4)
+        
         room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
         headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
         payload = {
             "sipUri": "sip:varunps20033@sip.linphone.org",
             "video": False
         }
-        res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
-        print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
         
-        for _ in range(15):
+        print(f"Starting SIP Dial-Out to {payload['sipUri']} in room {room_name}...")
+        res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
+        print(f"SIP Dial-Out Status: {res.status_code} - {res.text}")
+
+        # Wait up to 30 seconds for the human agent to join
+        for i in range(30):
             if call_state.get("sip_agent_joined"):
-                print("SIP agent joined. Exiting bot.")
+                print("SIP agent detected in room. Bot handoff complete. Exiting.")
+                # We give a tiny buffer for the transport to sync then clear
+                await asyncio.sleep(1)
                 await transport.cleanup()
                 sys.exit(0)
             await asyncio.sleep(1)
-        
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent is busy. Apologize and offer to collect details for a callback."}])])
+            if i % 5 == 0:
+                print(f"Waiting for agent... ({i}s passed)")
+
+        # If we reach here, no agent joined
+        print("Transfer timeout: No agent picked up.")
+        call_state["transfer_in_progress"] = False
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent is currently busy or unavailable. Apologize sincerely and offer to collect the user's details for a callback."}])])
 
     async def transfer_to_human(params: FunctionCallParams):
         """Transfers the call to a human agent."""
-        await params.result_callback("Connecting you to a human agent now.")
+        if call_state["transfer_in_progress"]:
+            return await params.result_callback("I am already trying to connect you.")
+            
+        call_state["transfer_in_progress"] = True
+        await params.result_callback("Connecting you to a human agent now. Please stay on the line.")
         asyncio.create_task(sip_transfer_watcher())
 
     async def send_callback_email(params: FunctionCallParams):
-        """Sends an email with the user's callback details.
-        
-        Args:
-            name (str): The user's full name.
-            email_address (str): The user's email address.
-            phone_number (str, optional): The user's contact phone number.
-            company_name (str, optional): The user's company name.
-            reason (str, optional): The reason for the callback.
-        """
+        """Sends an email with the user's callback details."""
         args_dict = params.arguments
         name = args_dict.get("name", "Unknown")
         email_addr = args_dict.get("email_address", "Unknown")
@@ -304,8 +316,15 @@ async def main():
     
     @transport.event_handler("on_participant_joined")
     async def on_participant_joined(transport, participant):
-        if participant.get("info", {}).get("isRemote"):
+        info = participant.get("info", {})
+        # Daily marks SIP dial-out participants with participantType: sip
+        # Or sometimes they appear as remote participants with a specific name
+        if info.get("participantType") == "sip" or (info.get("isRemote") and "sip" in participant.get("user_id", "").lower()):
+            print(f"DEBUG: Potential SIP Agent Joined: {participant.get('user_id')} / {info.get('participantType')}")
             call_state["sip_agent_joined"] = True
+        elif info.get("isRemote"):
+            # This is likely the WEB user
+            print(f"DEBUG: Web User Joined: {participant.get('user_id')}")
 
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
