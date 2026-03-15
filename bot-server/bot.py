@@ -20,13 +20,14 @@ from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
-from pipecat.frames.frames import LLMMessagesFrame
+from pipecat.frames.frames import LLMMessagesFrame, EndFrame
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
 from pipecat.services.llm_service import FunctionCallParams
+from pipecat.processors.user_idle_processor import UserIdleProcessor
 
 import argparse
 
@@ -406,6 +407,17 @@ async def main():
         send_callback_email
     )
 
+    async def handle_idle(processor: UserIdleProcessor):
+        print("User idle for 60 seconds. Disconnecting.")
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user has been completely silent for 1 minute. Say exactly: 'I haven't heard anything from you, so I will disconnect now. Goodbye!'"}])])
+        async def delayed_exit():
+            await asyncio.sleep(8) # Allow time for LLM generation and Cartesia TTS
+            await transport.cleanup()
+            sys.exit(0)
+        asyncio.create_task(delayed_exit())
+
+    user_idle = UserIdleProcessor(callback=handle_idle, timeout=60.0)
+
     # 5. Construct the Pipeline
     # Listen -> Transcribe -> LLM Processing -> Speak -> Send to Transport
     pipeline = Pipeline([
@@ -413,6 +425,7 @@ async def main():
         vad_processor,
         stt,
         context_aggregator.user(),
+        user_idle,
         llm,
         tts,
         transport.output(),
