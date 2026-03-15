@@ -133,7 +133,13 @@ export default function Header() {
             </button>
           </nav>
 
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center gap-4">
+            <button
+              onClick={() => setIsVoiceOpen(true)}
+              className="bg-primary text-black px-3 py-1.5 rounded-full font-bold hover:bg-primary/90 transition-all text-xs shadow-[0_0_10px_rgba(220,231,53,0.2)]"
+            >
+              Talk To Us
+            </button>
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-300 hover:text-white focus:outline-none"
@@ -158,6 +164,16 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
+
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                setIsVoiceOpen(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-primary text-black py-4 rounded-xl font-bold hover:bg-primary/90 transition-all"
+            >
+              Talk To Us <Phone className="w-5 h-5" />
+            </button>
 
             <div className="pt-4 border-t border-white/10">
               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Products</p>

@@ -93,7 +93,7 @@ async def main():
 
         When the call begins, greet the caller with:
 
-        "Please wait while we connect to an Agent... Welcome to CryptoVoIP Technologies. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
+        "Welcome to CryptoVoIP Technologies. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
 
         Speak clearly and calmly.
 

@@ -1,0 +1,14 @@
+services:
+  bot-server:
+    build: .
+    container_name: cryptovoip-bot
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      - .:/app
+    # Necessary for some WebRTC interactions if host networking isn't used
+    # But usually, 8000 is enough for the FastAPI orchestrator
+    # and Pipecat uses Daily which handles the media relay.
