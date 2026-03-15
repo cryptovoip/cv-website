@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { RTVIClient, RTVIEvent } from "realtime-ai";
 import { DailyTransport } from "realtime-ai-daily";
 import { RTVIClientProvider, RTVIClientAudio, useRTVIClient, useRTVIClientEvent } from "realtime-ai-react";
@@ -39,6 +39,14 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
     const [email, setEmail] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
 
+    const connectSound = useRef<HTMLAudioElement | null>(null);
+    const disconnectSound = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        connectSound.current = new Audio("/connect.wav");
+        disconnectSound.current = new Audio("/disconnect.wav");
+    }, []);
+
     // Hook into RTVI Events
     useRTVIClientEvent(RTVIEvent.Connected, () => setStatus("connected"));
     useRTVIClientEvent(RTVIEvent.Disconnected, () => setStatus("idle"));
@@ -67,6 +75,7 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
 
         setErrorMsg("");
         setStatus("connecting");
+        connectSound.current?.play().catch(e => console.error("Audio play failed:", e));
 
         try {
             // We pass the email to the backend as part of our anti-spam architecture
@@ -82,6 +91,7 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
     };
 
     const handleDisconnect = useCallback(() => {
+        disconnectSound.current?.play().catch(e => console.error("Audio play failed:", e));
         client?.disconnect();
         setStatus("idle");
         if (onClose) onClose();
