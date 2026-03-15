@@ -264,7 +264,7 @@ async def main():
 
         Once you have collected the required details (Name and Email), immediately call the tool:
         
-        send_callback_email
+        send_callback_email(name="User Name", email_address="user@email.com", ...)
 
         After the tool returns, tell the user: "Our team will contact you soon. Do you need more information?"
 
@@ -356,7 +356,15 @@ async def main():
             print(f"SIP Transfer Error: {e}")
 
     async def send_callback_email(params: FunctionCallParams):
-        """Sends an email with the user's callback details."""
+        """Sends an email with the user's callback details.
+        
+        Args:
+            name (str): The user's full name.
+            email_address (str): The user's email address.
+            phone_number (str, optional): The user's contact phone number.
+            company_name (str, optional): The user's company name.
+            reason (str, optional): The reason for the callback or project interest.
+        """
         args_dict = params.arguments
         name = args_dict.get("name", "Unknown")
         email_addr = args_dict.get("email_address", "Unknown")
