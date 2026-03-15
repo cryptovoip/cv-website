@@ -68,7 +68,7 @@ async def main():
     # TTS -> Cartesia
     tts = CartesiaTTSService(
         api_key=os.getenv("CARTESIA_API_KEY"),
-        voice_id="fb294eba-297d-4731-b634-5cfac0343a60" # Shailaja (Hindi Female)
+        voice_id="3b554273-4299-48b9-9aaf-eefd438e3941" # Shailaja (Indian Lady)
     )
 
     # 3. Knowledge Base Context (System Prompt)
@@ -478,7 +478,7 @@ async def main():
     async def on_first_participant_joined(transport, participant):
         # Fire the initial greeting so the bot speaks first
         await transport.capture_participant_transcription(participant["id"])
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself as Shailaja and use the official CALL GREETING."}])])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself exactly as instructed in the CALL GREETING. Start with 'Please wait while we connect to an Agent...'."}])])
 
     # 5. Execute Runner (Hard Timeout inside Runner or Server layer)
     runner = PipelineRunner()
