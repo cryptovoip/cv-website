@@ -20,7 +20,8 @@ from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
-from pipecat.frames.frames import LLMMessagesFrame, EndFrame
+from pipecat.frames.frames import EndFrame
+from pipecat.services.openai.llm import OpenAILLMContextFrame
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.processors.user_idle_processor import UserIdleProcessor
@@ -228,7 +229,7 @@ async def main():
         # If we reach here, no agent joined
         print("Transfer timeout: No agent picked up.")
         call_state["transfer_in_progress"] = False
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent seems to be busy or unavailable at the moment. Offer to collect the user's details to arrange an immediate callback. Do NOT disconnect yet; wait for the user's response."}])])
+        await task.queue_frames([OpenAILLMContextFrame([{"role": "system", "content": "The human agent seems to be busy or unavailable at the moment. Offer to collect the user's details to arrange an immediate callback. Do NOT disconnect yet; wait for the user's response."}])])
 
     async def transfer_to_human(params: FunctionCallParams):
         """Transfers the call to a human agent."""
@@ -293,7 +294,7 @@ async def main():
     llm.register_function("end_call", end_call)
 
     async def handle_idle(processor: UserIdleProcessor):
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user has been silent for 1 minute. Say goodbye and disconnect."}])])
+        await task.queue_frames([OpenAILLMContextFrame([{"role": "system", "content": "The user has been silent for 1 minute. Say goodbye and disconnect."}])])
         await asyncio.sleep(8) 
         await transport.cleanup()
         sys.exit(0)
@@ -329,7 +330,7 @@ async def main():
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         await transport.capture_participant_transcription(participant["id"])
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself as instructed in the CALL GREETING. Start with 'Welcome to CryptoVoIP Technologies.'"}])])
+        await task.queue_frames([OpenAILLMContextFrame([{"role": "system", "content": "Please introduce yourself as instructed in the CALL GREETING. Start with 'Welcome to CryptoVoIP Technologies.'"}])])
 
     runner = PipelineRunner()
     await runner.run(task)
