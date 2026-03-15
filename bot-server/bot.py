@@ -266,7 +266,16 @@ async def main():
         
         send_callback_email
 
-        And kindly let the user know their request has been recorded.
+        After the tool returns, tell the user: "Our team will contact you soon. Do you need more information?"
+
+        ------------------------------------------------
+        ENDING THE CALL
+        ------------------------------------------------
+
+        If the user indicates they are finished, do not need more information, or say goodbye, respond by thanking them for contacting CryptoVoIP.
+        Then, immediately call the tool:
+        
+        end_call
 
         ------------------------------------------------
         TRANSFER TO HUMAN
@@ -392,9 +401,20 @@ async def main():
             print("SMTP credentials missing. Callback details recorded:")
             print(content)
 
-        await params.result_callback("Callback request recorded. Let the user know you have noted their details and our team will reach out soon.")
+        await params.result_callback("Callback request successfully recorded. Tell the user exactly: 'Our team will contact you soon. Do you need any more information?'")
 
-    tools = ToolsSchema(standard_tools=[transfer_to_human, send_callback_email])
+    async def end_call(params: FunctionCallParams):
+        """Ends the active voice session when the user is finished the conversation. Call this only when the user explicitly has no more questions and wants to hang up."""
+        await params.result_callback("Disconnecting now.")
+        
+        async def delayed_exit():
+            await asyncio.sleep(6) # Give the AI time to speak its final goodbye before killing the process
+            await transport.cleanup()
+            sys.exit(0)
+            
+        asyncio.create_task(delayed_exit())
+
+    tools = ToolsSchema(standard_tools=[transfer_to_human, send_callback_email, end_call])
     context = LLMContext(messages, tools)
     context_aggregator = LLMContextAggregatorPair(context)
 
@@ -405,6 +425,10 @@ async def main():
     llm.register_function(
         "send_callback_email",
         send_callback_email
+    )
+    llm.register_function(
+        "end_call",
+        end_call
     )
 
     async def handle_idle(processor: UserIdleProcessor):
