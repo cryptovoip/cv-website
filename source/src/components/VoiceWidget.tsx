@@ -164,9 +164,9 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
                     )}
                 </div>
 
-                <h3 className="font-bold text-lg">
-                    {status === "connecting" && "Dialing..."}
-                    {status === "connected" && "Agent joining..."}
+                <h3 className="font-bold text-lg text-center">
+                    {status === "connecting" && "Please wait while we connect to Agent..."}
+                    {status === "connected" && "Please wait while we connect to Agent..."}
                     {status === "speaking" && "Agent is listening & speaking"}
                 </h3>
 

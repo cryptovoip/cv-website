@@ -92,27 +92,11 @@ async def main():
 
         When the call begins, greet the caller with:
 
-        "Welcome to CryptoVoIP Technologies. I'm the AI voice assistant built inhouse. Contact us for your Voice Bots & Agentic AI Solutions.
-
-        We develop advanced voice and video bots, VoIP infrastructure, Mobile Device management & IP Camera Security & AI Solutions.
-
-        If you'd like to speak with our team at any time, just say 'transfer to human'. You can also ask about our products or schedule a demo.
-
-        How can I help you today?"
+        "Please wait while we connect to an Agent... Welcome to CryptoVoIP Technologies. We specialize in developing custom tailored bots and AI agents specific to your business. We developed this bot as well. How can I help you today?"
 
         Speak clearly and calmly.
 
-        ------------------------------------------------
-        IMPORTANT COMPANY CLARIFICATION
-        ------------------------------------------------
 
-        CryptoVoIP Technologies has nothing to do with cryptocurrency.
-
-        If someone asks about crypto or digital currency, politely clarify:
-
-        "CryptoVoIP is actually a software technology company. We specialize in voice bots, video AI systems, VoIP infrastructure, and secure device platforms."
-
-        Then guide the conversation back to services.
 
         ------------------------------------------------
         ABOUT THE COMPANY
@@ -338,15 +322,15 @@ async def main():
         print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
         
         call_state["sip_agent_joined"] = False
-        for _ in range(25):
+        for _ in range(15):
             if call_state["sip_agent_joined"]:
                 print("SIP agent joined. Exiting bot.")
                 await transport.cleanup()
                 sys.exit(0)
             await asyncio.sleep(1)
         
-        print("SIP agent did not join. Asking for callback.")
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent did not answer the transfer. Apologize to the user that agents are busy, and ask if they would like to leave their details (Name, Email, optional Phone, Company, Reason) for a callback."}])])
+        print("SIP agent did not join or cancelled. Asking for callback.")
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent cancelled the call or is busy. Apologize to the user that our human agents are currently busy. Tell the user you will collect their details for a callback (Name, Email, Phone), or if they have appointment details, collect them, and assure them our team will contact them soon."}])])
 
     async def transfer_to_human(params: FunctionCallParams):
         """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
@@ -447,7 +431,7 @@ async def main():
     async def on_first_participant_joined(transport, participant):
         # Fire the initial greeting so the bot speaks first
         await transport.capture_participant_transcription(participant["id"])
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself as the CryptoVoIP voice assistant and ask how you can help."}])])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself exactly as instructed in the CALL GREETING. Start with 'Please wait while we connect to an Agent...'."}])])
 
     # 5. Execute Runner (Hard Timeout inside Runner or Server layer)
     runner = PipelineRunner()
