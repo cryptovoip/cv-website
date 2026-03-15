@@ -21,10 +21,6 @@ from pipecat.processors.audio.vad_processor import VADProcessor
 from pipecat.processors.aggregators.llm_context import LLMContext
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.frames.frames import LLMMessagesFrame, EndFrame
-from pipecat.services.deepgram.stt import DeepgramSTTService
-from pipecat.transports.daily.transport import DailyParams, DailyTransport
-from pipecat.audio.vad.silero import SileroVADAnalyzer
-from pipecat.processors.audio.vad_processor import VADProcessor
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.processors.user_idle_processor import UserIdleProcessor
@@ -55,17 +51,10 @@ async def main():
     vad_processor = VADProcessor(vad_analyzer=SileroVADAnalyzer())
 
     # 2. Services Initialization
-    # IMPORTANT: The user wants this to be LLM agnostic.
-    # We are using OpenAI for the boilerplate, but this can literally be imported
-    # as `AnthropicLLMService` or `TogetherLLMService` simply by replacing the import and class.
-    
-    # STT -> Deepgram is the fastest for real-time WebRTC
     stt = DeepgramSTTService(api_key=os.getenv("DEEPGRAM_API_KEY"))
     
-    # LLM -> OpenAI (can be swapped)
     llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-4o")
     
-    # TTS -> Cartesia
     tts = CartesiaTTSService(
         api_key=os.getenv("CARTESIA_API_KEY"),
         voice_id="79a125e8-cd45-4c13-8a67-188112f4dd22" # Friendly British male
@@ -76,7 +65,6 @@ async def main():
         {
         "role": "system",
         "content": """
-
         You are the official AI Voice Assistant of CryptoVoIP Technologies.
 
         You behave like a knowledgeable technical sales engineer who speaks naturally and professionally. Your responses must be concise, clear, and conversational because this is a real-time voice call.
@@ -94,8 +82,6 @@ async def main():
         "Welcome to CryptoVoIP Technologies. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
 
         Speak clearly and calmly.
-
-
 
         ------------------------------------------------
         ABOUT THE COMPANY
@@ -196,64 +182,16 @@ async def main():
         Services include:
 
         • SIP infrastructure design
-        • telecom architecture
-        • VoIP troubleshooting
-        • SIP mobile app development
-        • WebRTC applications
-
-        ------------------------------------------------
-        Technical Trainings
-        ------------------------------------------------
-
-        CryptoVoIP also provides advanced technical training programs in:
-
-        • VoIP and SIP systems
-        • WebRTC development
-        • Voice bot architecture
-        • Video AI systems
-        • telecom infrastructure engineering
-
-        Users can check the website for details.
-
-        ------------------------------------------------
-        CONVERSATION BEHAVIOR RULES
-        ------------------------------------------------
-
-        1. Speak naturally like a human engineer, not like a script.
-
-        2. Keep responses short and conversational.
-
-        3. Do not read large bullet lists aloud.
-
-        4. If the user shows interest in a product, briefly explain and suggest a demo.
-
-        Example:
-
-        "We can definitely help with that. Would you like to schedule a quick demo with our engineering team?"
-
-        5. If the caller is asking about a project, ask simple qualification questions such as:
-
-        • What type of system are you looking to build?
-        • Is this for your company or a client project?
-        • Are you interested in bots, VoIP systems, or camera platforms?
-
-        6. If the user asks technical questions, answer briefly and offer to connect them with engineers if needed.
-
-        ------------------------------------------------
-        PRIVACY STATEMENT
-        ------------------------------------------------
-
-        If a caller asks about privacy, explain:
-
-        No personal information such as email or phone number is stored unless the caller explicitly agrees to share it.
+        • custom WebRTC development
+        • high-availability telecom systems
 
         ------------------------------------------------
         CALLBACK REQUEST
         ------------------------------------------------
 
-        If a caller asks for a callback OR if you inform them that agents are busy, you MUST ask for their details for the callback.
+        If a caller asks for a callback OR if you inform them that agents are busy, you MUST ask for their details.
         
-        Collect these details organically:
+        Collect organically:
         • Name (Required)
         • Email Address (Required)
         • Phone number (Optional)
@@ -269,94 +207,11 @@ async def main():
         If the user says NO or indicates they are finished:
         1. Say: "Thank you for contacting CryptoVoIP. Our team will connect with you soon. Goodbye!"
         2. Immediately call the `end_call` tool.
-
-        ------------------------------------------------
-        ENDING THE CALL
-        ------------------------------------------------
-
-        If the user indicates they are finished, do not need more information, or say goodbye, respond by thanking them for contacting CryptoVoIP.
-        Then, immediately call the tool:
-        
-        end_call
-
-        ------------------------------------------------
-        TRANSFER TO HUMAN
-        ------------------------------------------------
-
-        If the user says anything similar to:
-
-        transfer to human  
-        talk to someone  
-        connect me to a person  
-        human agent  
-        support team  
-
-        Respond with:
-
-        "Sure, I will connect you to our team."
-
-        Then immediately call the tool:
-
-        transfer_to_human
-
-        Do not continue the conversation after initiating the transfer.
-
-        ------------------------------------------------
-        PRIMARY GOAL
-        ------------------------------------------------
-
-        Your goals are to:
-
-        • Answer questions about CryptoVoIP technologies
-        • Explain products clearly
-        • Identify potential customers
-        • Suggest demos or consultations
-        • Transfer the caller to a human when requested
-
-        Always behave like a professional technical sales engineer representing CryptoVoIP Technologies.
-
         """
         }
     ]
-
-    # 4. Define and Register Tools
-    call_state = {"sip_agent_joined": False}
-
-    async def sip_transfer_watcher():
-        await asyncio.sleep(4)
-        room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
-        headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
-        payload = {
-            "sipUri": "sip:varunps20033@sip.linphone.org",
-            "video": False
-        }
-        res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
-        print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
-        
-        call_state["sip_agent_joined"] = False
-        for _ in range(15):
-            if call_state["sip_agent_joined"]:
-                print("SIP agent joined. Exiting bot.")
-                await transport.cleanup()
-                sys.exit(0)
-            await asyncio.sleep(1)
-        
-        print("SIP agent did not join or cancelled. Asking for callback.")
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent cancelled the call or is busy. Apologize to the user that our human agents are currently busy. Tell the user you will collect their details for a callback (Name, Email, Phone), or if they have appointment details, collect them, and assure them our team will contact them soon."}])])
-
-    async def transfer_to_human(params: FunctionCallParams):
-        """Transfers the call to a human SIP Linphone agent when the user explicitly requests one."""
-        await params.result_callback("Transferring the user to a human agent now.")
-        
-        try:
-            # Instruct the AI to dynamically acknowledge the transfer in its own voice
-            await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user requested a human transfer. Please acknowledge this politely and professionally, indicating you are connecting them to an expert now. Keep it brief."}])])
-            
-            asyncio.create_task(sip_transfer_watcher())
-            
-        except Exception as e:
-            print(f"SIP Transfer Error: {e}")
-
+    context = LLMContext(messages)
+    
     async def send_callback_email(params: FunctionCallParams):
         """Sends an email with the user's callback details.
         
@@ -407,9 +262,6 @@ async def main():
                 print(f"Callback email sent to contact@cryptovoip.in for {name}")
             except Exception as e:
                 print(f"Failed to send email: {e}")
-        else:
-            print("SMTP credentials missing. Callback details recorded:")
-            print(content)
 
         await params.result_callback("Callback request successfully recorded. Now ask the user: 'Do you need any more information?'. If they say no, thank them, mention the team will connect soon, say goodbye, and then call 'end_call'.")
 
@@ -418,42 +270,30 @@ async def main():
         await params.result_callback("Disconnecting now.")
         
         async def delayed_exit():
-            await asyncio.sleep(6) # Give the AI time to speak its final goodbye before killing the process
+            await asyncio.sleep(6) 
             await transport.cleanup()
             sys.exit(0)
             
         asyncio.create_task(delayed_exit())
 
-    tools = ToolsSchema(standard_tools=[transfer_to_human, send_callback_email, end_call])
+    tools = ToolsSchema(standard_tools=[send_callback_email, end_call])
     context = LLMContext(messages, tools)
     context_aggregator = LLMContextAggregatorPair(context)
 
-    llm.register_function(
-        "transfer_to_human",
-        transfer_to_human
-    )
-    llm.register_function(
-        "send_callback_email",
-        send_callback_email
-    )
-    llm.register_function(
-        "end_call",
-        end_call
-    )
+    llm.register_function("send_callback_email", send_callback_email)
+    llm.register_function("end_call", end_call)
 
     async def handle_idle(processor: UserIdleProcessor):
         print("User idle for 60 seconds. Disconnecting.")
         await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user has been completely silent for 1 minute. Say exactly: 'I haven't heard anything from you, so I will disconnect now. Goodbye!'"}])])
         async def delayed_exit():
-            await asyncio.sleep(8) # Allow time for LLM generation and Cartesia TTS
+            await asyncio.sleep(8) 
             await transport.cleanup()
             sys.exit(0)
         asyncio.create_task(delayed_exit())
 
     user_idle = UserIdleProcessor(callback=handle_idle, timeout=60.0)
 
-    # 5. Construct the Pipeline
-    # Listen -> Transcribe -> LLM Processing -> Speak -> Send to Transport
     pipeline = Pipeline([
         transport.input(),
         vad_processor,
@@ -468,22 +308,13 @@ async def main():
 
     task = PipelineTask(pipeline, params=PipelineParams(allow_interruptions=True))
     
-    # Register events
-    @transport.event_handler("on_participant_joined")
-    async def on_participant_joined(transport, participant):
-        if participant.get("info", {}).get("isRemote"):
-            call_state["sip_agent_joined"] = True
-
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
-        # Fire the initial greeting so the bot speaks first
         await transport.capture_participant_transcription(participant["id"])
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself exactly as instructed in the CALL GREETING. Start with 'Please wait while we connect to an Agent...'."}])])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself exactly as instructed in the CALL GREETING. Start with 'Welcome to CryptoVoIP Technologies.'"}])])
 
-    # 5. Execute Runner (Hard Timeout inside Runner or Server layer)
     runner = PipelineRunner()
     await runner.run(task)
 
 if __name__ == "__main__":
-    # We use asyncio to run the async Pipecat framework
     asyncio.run(main())
