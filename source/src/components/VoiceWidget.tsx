@@ -100,7 +100,7 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
     // UI States
     if (status === "idle" || status === "error") {
         return (
-            <div className="bg-dark-bg p-8 rounded-3xl border border-white/10 shadow-2xl w-full max-w-sm">
+            <div className="bg-dark-bg p-6 sm:p-8 rounded-3xl border border-white/10 shadow-2xl w-full max-w-sm max-h-[85vh] overflow-y-auto scrollbar-hide relative">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
                         <Bot className="w-6 h-6 text-primary" />
@@ -151,7 +151,7 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
     }
 
     return (
-        <div className="bg-dark-bg p-8 rounded-3xl border border-primary/50 shadow-[0_0_30px_rgba(220,231,53,0.15)] w-full max-w-sm">
+        <div className="bg-dark-bg p-6 sm:p-8 rounded-3xl border border-primary/50 shadow-[0_0_30px_rgba(220,231,53,0.15)] w-full max-w-sm max-h-[85vh] overflow-y-auto scrollbar-hide relative">
             <div className="flex flex-col items-center mb-8">
                 <div className="relative mb-4">
                     <div className={`w-20 h-20 rounded-full flex items-center justify-center ${status === "speaking" ? "bg-primary animate-pulse" : "bg-white/10"}`}>
