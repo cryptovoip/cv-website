@@ -49,13 +49,16 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
 
     // Hook into RTVI Events
     useRTVIClientEvent(RTVIEvent.Connected, () => setStatus("connected"));
-    useRTVIClientEvent(RTVIEvent.Disconnected, () => setStatus("idle"));
+    useRTVIClientEvent(RTVIEvent.Disconnected, () => {
+        setStatus("idle");
+        if (onClose) onClose();
+    });
     useRTVIClientEvent(RTVIEvent.BotConnected, () => setStatus("speaking"));
     useRTVIClientEvent(RTVIEvent.BotDisconnected, () => setStatus("connected"));
 
     // Track when the human SIP agent leaves the room to automatically close the widget
     useRTVIClientEvent(RTVIEvent.ParticipantLeft, (participant: any) => {
-        if (!participant?.local && participant?.name !== "CryptoVoIP Rep") {
+        if (!participant?.local && participant?.name !== "Shailaja") {
             // A non-bot remote participant (the human human SIP agent) just hung up!
             handleDisconnect();
         }

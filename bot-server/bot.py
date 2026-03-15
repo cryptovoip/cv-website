@@ -45,7 +45,7 @@ async def main():
     transport = DailyTransport(
         room_url=args.u,
         token=args.t,
-        bot_name="CryptoVoIP Rep",
+        bot_name="Shailaja",
         params=DailyParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
@@ -65,10 +65,10 @@ async def main():
     # LLM -> OpenAI (can be swapped)
     llm = OpenAILLMService(api_key=os.getenv("OPENAI_API_KEY"), model="gpt-4o")
     
-    # TTS -> Cartesia is incredible for sub-100ms conversational audio
+    # TTS -> Cartesia
     tts = CartesiaTTSService(
         api_key=os.getenv("CARTESIA_API_KEY"),
-        voice_id="79a125e8-cd45-4c13-8a67-188112f4dd22" # Friendly British male
+        voice_id="fb294eba-297d-4731-b634-5cfac0343a60" # Shailaja (Hindi Female)
     )
 
     # 3. Knowledge Base Context (System Prompt)
@@ -77,7 +77,7 @@ async def main():
         "role": "system",
         "content": """
 
-        You are the official AI Voice Assistant of CryptoVoIP Technologies.
+        You are Shailaja, the official AI Voice Assistant of CryptoVoIP Technologies.
 
         You behave like a knowledgeable technical sales engineer who speaks naturally and professionally. Your responses must be concise, clear, and conversational because this is a real-time voice call.
 
@@ -91,9 +91,7 @@ async def main():
         CALL GREETING
         ------------------------------------------------
 
-        When the call begins, greet the caller with:
-
-        "Welcome to CryptoVoIP Technologies. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
+        "Welcome to CryptoVoIP Technologies. I am Shailaja. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
 
         Speak clearly and calmly.
 
@@ -266,9 +264,11 @@ async def main():
         
         send_callback_email(name="User Name", email_address="user@email.com", ...)
 
-        After the tool returns, tell the user: "Our team will contact you soon. Goodbye!" and immediately call:
+        After the tool returns, you MUST ask the user: "Do you need any more information?"
         
-        end_call
+        If the user says NO or indicates they are finished:
+        1. Say: "Thank you for contacting CryptoVoIP. Our team will connect with you soon. Goodbye!"
+        2. Immediately call the `end_call` tool.
 
         ------------------------------------------------
         ENDING THE CALL
@@ -411,7 +411,7 @@ async def main():
             print("SMTP credentials missing. Callback details recorded:")
             print(content)
 
-        await params.result_callback("Callback request successfully recorded. Tell the user: 'Our team will contact you soon. Goodbye!' Then immediately call the 'end_call' tool to hang up.")
+        await params.result_callback("Callback request successfully recorded. Now ask the user: 'Do you need any more information?'. If they say no, thank them, mention the team will connect soon, say goodbye, and then call 'end_call'.")
 
     async def end_call(params: FunctionCallParams):
         """Ends the active voice session when the user is finished the conversation. Call this only when the user explicitly has no more questions and wants to hang up."""
@@ -478,7 +478,7 @@ async def main():
     async def on_first_participant_joined(transport, participant):
         # Fire the initial greeting so the bot speaks first
         await transport.capture_participant_transcription(participant["id"])
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself exactly as instructed in the CALL GREETING. Start with 'Please wait while we connect to an Agent...'."}])])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself as Shailaja and use the official CALL GREETING."}])])
 
     # 5. Execute Runner (Hard Timeout inside Runner or Server layer)
     runner = PipelineRunner()
