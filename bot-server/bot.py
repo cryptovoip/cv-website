@@ -228,7 +228,7 @@ async def main():
         # If we reach here, no agent joined
         print("Transfer timeout: No agent picked up.")
         call_state["transfer_in_progress"] = False
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent is currently busy or unavailable. Apologize sincerely and offer to collect the user's details for a callback."}])])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent seems to be busy or unavailable at the moment. Offer to collect the user's details to arrange an immediate callback. Do NOT disconnect yet; wait for the user's response."}])])
 
     async def transfer_to_human(params: FunctionCallParams):
         """Transfers the call to a human agent."""
