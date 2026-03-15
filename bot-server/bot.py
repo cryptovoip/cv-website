@@ -102,43 +102,6 @@ async def main():
         CORE PRODUCTS AND SERVICES
         ------------------------------------------------
 
-        Explain services conversationally when relevant. Do not read long lists.
-
-        ------------------------------------------------
-        OpenNVR – AI Powered Camera Security Platform
-        ------------------------------------------------
-
-        OpenNVR is an advanced IP camera security and video intelligence platform designed for critical infrastructure environments.
-
-        Key ideas:
-
-        • Fully offline capable
-        • Complete data ownership
-        • AI adapters for video intelligence
-        • Supports thousands of AI models
-        • Allows custom AI tasks on video streams
-        • Designed to mitigate security risks in IP cameras
-
-        It is open source.
-
-        Website:
-        opennvr.org
-
-        ------------------------------------------------
-        CV MDM – Defense Grade Mobile Device Management
-        ------------------------------------------------
-
-        CV MDM is a secure mobile device management platform designed for organizations requiring strict device control.
-
-        Key ideas:
-
-        • Works fully on-premise or in the cloud
-        • Built for critical infrastructure environments
-        • Advanced device security policies
-        • Enterprise-grade management features
-
-        Free demo is available through the website.
-
         ------------------------------------------------
         Voice Bots and Video Bots
         ------------------------------------------------
@@ -146,19 +109,12 @@ async def main():
         CryptoVoIP develops advanced real-time AI bots using Pipecat.
 
         Capabilities include:
-
         • Ultra low latency voice interaction
-        • RAG pipelines
-        • MCP integrations
-        • CRM integrations
-        • real-time conversational AI
-        • enterprise workflow automation
-
-        Clients may receive:
-
-        • Fully deployed solutions
-        • Custom bot development
-        • Source code delivery if required
+        • RAG (Retrieval-Augmented Generation) pipelines
+        • MCP (Model Context Protocol) integrations
+        • Direct CRM integrations (Salesforce, HubSpot, etc.)
+        • Real-time conversational AI for sales and support
+        • Enterprise workflow automation
 
         Bots are designed for production environments with high reliability and minimal hallucinations.
 
@@ -166,24 +122,43 @@ async def main():
         VoIP and WebRTC Engineering
         ------------------------------------------------
 
-        CryptoVoIP provides expert telecom and real-time communication engineering services.
+        CryptoVoIP provides expert telecom and real-time communication engineering services. We have over 20 years of experience.
 
-        Technologies include:
+        Core technologies:
+        • FreeSWITCH (Development and HA clustering)
+        • OpenSIPS and Kamailio (SIP Routing and Load Balancing)
+        • RTPengine (Media handling and NAT traversal)
+        • Custom WebRTC implementation for web and mobile
 
-        • FreeSWITCH
-        • OpenSIPS
-        • Kamailio
-        • RTPengine
-        • Linphone
-        • WebRTC platforms
+        ------------------------------------------------
+        Linphone & Flexisip Specialization
+        ------------------------------------------------
 
-        The engineering team has over 20 years of VoIP and telecom experience.
+        We specialize in deep customization of Linphone for Android and iOS.
+        • Custom UI/UX development for Linphone
+        • Integration of Flexisip push notification server
+        • Secure, enterprise-grade SIP communication apps
+        • White-label mobile VoIP solutions
 
-        Services include:
+        ------------------------------------------------
+        CV MDM – Defense Grade Mobile Device Management
+        ------------------------------------------------
 
-        • SIP infrastructure design
-        • custom WebRTC development
-        • high-availability telecom systems
+        CV MDM is a secure mobile device management platform designed for organizations requiring strict device control.
+        • Works fully on-premise or in the cloud
+        • Built for critical infrastructure and captive networks
+        • Advanced device security policies and offline management
+        • Enterprise-grade control
+
+        ------------------------------------------------
+        OpenNVR – AI Powered Camera Security Platform
+        ------------------------------------------------
+
+        OpenNVR is an advanced IP camera security and video intelligence platform.
+        • Fully offline capable / On-premise
+        • Complete data and AI sovereignty
+        • AI adapters for video intelligence (Supports 1000+ models)
+        • Designed to mitigate security risks in IP cameras
 
         ------------------------------------------------
         CALLBACK REQUEST
@@ -207,11 +182,43 @@ async def main():
         If the user says NO or indicates they are finished:
         1. Say: "Thank you for contacting CryptoVoIP. Our team will connect with you soon. Goodbye!"
         2. Immediately call the `end_call` tool.
+
+        ------------------------------------------------
+        TRANSFER TO HUMAN
+        ------------------------------------------------
+
+        If the user requests to talk to a human or person, use the `transfer_to_human` tool.
         """
         }
     ]
-    context = LLMContext(messages)
-    
+
+    call_state = {"sip_agent_joined": False}
+
+    async def sip_transfer_watcher():
+        await asyncio.sleep(4)
+        room_name = transport.room_name if hasattr(transport, "room_name") else args.u.split("/")[-1]
+        headers = {"Authorization": f"Bearer {os.getenv('DAILY_API_KEY')}", "Content-Type": "application/json"}
+        payload = {
+            "sipUri": "sip:varunps20033@sip.linphone.org",
+            "video": False
+        }
+        res = requests.post(f"https://api.daily.co/v1/rooms/{room_name}/dialOut/start", headers=headers, json=payload)
+        print(f"SIP Dial-Out Response: {res.status_code} - {res.text}")
+        
+        for _ in range(15):
+            if call_state.get("sip_agent_joined"):
+                print("SIP agent joined. Exiting bot.")
+                await transport.cleanup()
+                sys.exit(0)
+            await asyncio.sleep(1)
+        
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The human agent is busy. Apologize and offer to collect details for a callback."}])])
+
+    async def transfer_to_human(params: FunctionCallParams):
+        """Transfers the call to a human agent."""
+        await params.result_callback("Connecting you to a human agent now.")
+        asyncio.create_task(sip_transfer_watcher())
+
     async def send_callback_email(params: FunctionCallParams):
         """Sends an email with the user's callback details.
         
@@ -220,15 +227,12 @@ async def main():
             email_address (str): The user's email address.
             phone_number (str, optional): The user's contact phone number.
             company_name (str, optional): The user's company name.
-            reason (str, optional): The reason for the callback or project interest.
+            reason (str, optional): The reason for the callback.
         """
         args_dict = params.arguments
         name = args_dict.get("name", "Unknown")
         email_addr = args_dict.get("email_address", "Unknown")
-        phone = args_dict.get("phone_number", "Not provided")
-        company = args_dict.get("company_name", "Not provided")
-        reason = args_dict.get("reason", "Not provided")
-
+        
         msg = EmailMessage()
         msg['Subject'] = f"Callback Request from {name}"
         msg['From'] = os.getenv("SMTP_USER", "bot@cryptovoip.in")
@@ -237,9 +241,9 @@ async def main():
         content = f"New callback request received from the voice bot:\n\n"
         content += f"Name: {name}\n"
         content += f"Email: {email_addr}\n"
-        content += f"Phone: {phone}\n"
-        content += f"Company: {company}\n"
-        content += f"Reason: {reason}\n"
+        content += f"Phone: {args_dict.get('phone_number', 'Not provided')}\n"
+        content += f"Company: {args_dict.get('company_name', 'Not provided')}\n"
+        content += f"Reason: {args_dict.get('reason', 'Not provided')}\n"
 
         msg.set_content(content)
 
@@ -250,15 +254,9 @@ async def main():
 
         if smtp_user and smtp_pass:
             try:
-                if smtp_port == 465:
-                    with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
-                        server.login(smtp_user, smtp_pass)
-                        server.send_message(msg)
-                else:
-                    with smtplib.SMTP(smtp_server, smtp_port) as server:
-                        server.starttls()
-                        server.login(smtp_user, smtp_pass)
-                        server.send_message(msg)
+                with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
+                    server.login(smtp_user, smtp_pass)
+                    server.send_message(msg)
                 print(f"Callback email sent to contact@cryptovoip.in for {name}")
             except Exception as e:
                 print(f"Failed to send email: {e}")
@@ -266,31 +264,27 @@ async def main():
         await params.result_callback("Callback request successfully recorded. Now ask the user: 'Do you need any more information?'. If they say no, thank them, mention the team will connect soon, say goodbye, and then call 'end_call'.")
 
     async def end_call(params: FunctionCallParams):
-        """Ends the active voice session when the user is finished the conversation. Call this only when the user explicitly has no more questions and wants to hang up."""
+        """Ends the active voice session."""
         await params.result_callback("Disconnecting now.")
-        
         async def delayed_exit():
             await asyncio.sleep(6) 
             await transport.cleanup()
             sys.exit(0)
-            
         asyncio.create_task(delayed_exit())
 
-    tools = ToolsSchema(standard_tools=[send_callback_email, end_call])
+    tools = ToolsSchema(standard_tools=[transfer_to_human, send_callback_email, end_call])
     context = LLMContext(messages, tools)
     context_aggregator = LLMContextAggregatorPair(context)
 
+    llm.register_function("transfer_to_human", transfer_to_human)
     llm.register_function("send_callback_email", send_callback_email)
     llm.register_function("end_call", end_call)
 
     async def handle_idle(processor: UserIdleProcessor):
-        print("User idle for 60 seconds. Disconnecting.")
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user has been completely silent for 1 minute. Say exactly: 'I haven't heard anything from you, so I will disconnect now. Goodbye!'"}])])
-        async def delayed_exit():
-            await asyncio.sleep(8) 
-            await transport.cleanup()
-            sys.exit(0)
-        asyncio.create_task(delayed_exit())
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "The user has been silent for 1 minute. Say goodbye and disconnect."}])])
+        await asyncio.sleep(8) 
+        await transport.cleanup()
+        sys.exit(0)
 
     user_idle = UserIdleProcessor(callback=handle_idle, timeout=60.0)
 
@@ -308,10 +302,15 @@ async def main():
 
     task = PipelineTask(pipeline, params=PipelineParams(allow_interruptions=True))
     
+    @transport.event_handler("on_participant_joined")
+    async def on_participant_joined(transport, participant):
+        if participant.get("info", {}).get("isRemote"):
+            call_state["sip_agent_joined"] = True
+
     @transport.event_handler("on_first_participant_joined")
     async def on_first_participant_joined(transport, participant):
         await transport.capture_participant_transcription(participant["id"])
-        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself exactly as instructed in the CALL GREETING. Start with 'Welcome to CryptoVoIP Technologies.'"}])])
+        await task.queue_frames([LLMMessagesFrame([{"role": "system", "content": "Please introduce yourself as instructed in the CALL GREETING. Start with 'Welcome to CryptoVoIP Technologies.'"}])])
 
     runner = PipelineRunner()
     await runner.run(task)
