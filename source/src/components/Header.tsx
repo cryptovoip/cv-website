@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, ChevronDown, Phone } from "lucide-react";
 import dynamic from "next/dynamic";
+import { createPortal } from "react-dom";
 
 const VoiceWidget = dynamic(() => import("./VoiceWidget").then(m => m.VoiceWidget), { ssr: false });
 
@@ -13,6 +14,11 @@ export default function Header() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -195,21 +201,23 @@ export default function Header() {
         </div>
       )}
 
-      {/* Global Voice Bot Modal Overlay */}
-      {isVoiceOpen && (
-        <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 backdrop-blur-sm" onClick={() => setIsVoiceOpen(false)}>
-          <div className="min-h-full flex items-center justify-center p-4 py-20">
-            <div className="relative z-10 w-full max-w-sm flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+      {/* Global Voice Bot Modal Overlay via Portal */}
+      {isVoiceOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[9999]">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsVoiceOpen(false)}></div>
+          <div className="absolute inset-0 overflow-y-auto flex items-start justify-center pt-24 pb-16 px-4">
+            <div className="relative z-10 w-full max-w-sm h-fit mt-auto mb-auto">
               <button
                 onClick={() => setIsVoiceOpen(false)}
-                className="absolute -top-12 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-110"
+                className="absolute -top-14 right-0 p-2 bg-white/10 hover:bg-white/20 rounded-full text-white backdrop-blur-md transition shadow-[0_0_15px_rgba(255,255,255,0.1)] hover:scale-110"
               >
                 <X className="w-6 h-6" />
               </button>
               <VoiceWidget onClose={() => setIsVoiceOpen(false)} />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
