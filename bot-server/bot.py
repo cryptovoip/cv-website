@@ -45,7 +45,7 @@ async def main():
     transport = DailyTransport(
         room_url=args.u,
         token=args.t,
-        bot_name="Shailaja",
+        bot_name="CryptoVoIP Rep",
         params=DailyParams(
             audio_in_enabled=True,
             audio_out_enabled=True,
@@ -68,7 +68,7 @@ async def main():
     # TTS -> Cartesia
     tts = CartesiaTTSService(
         api_key=os.getenv("CARTESIA_API_KEY"),
-        voice_id="3b554273-4299-48b9-9aaf-eefd438e3941" # Shailaja (Indian Lady)
+        voice_id="79a125e8-cd45-4c13-8a67-188112f4dd22" # Friendly British male
     )
 
     # 3. Knowledge Base Context (System Prompt)
@@ -77,7 +77,7 @@ async def main():
         "role": "system",
         "content": """
 
-        You are Shailaja, the official AI Voice Assistant of CryptoVoIP Technologies.
+        You are the official AI Voice Assistant of CryptoVoIP Technologies.
 
         You behave like a knowledgeable technical sales engineer who speaks naturally and professionally. Your responses must be concise, clear, and conversational because this is a real-time voice call.
 
@@ -91,7 +91,7 @@ async def main():
         CALL GREETING
         ------------------------------------------------
 
-        "Welcome to CryptoVoIP Technologies. I am Shailaja. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
+        "Welcome to CryptoVoIP Technologies. We specialize in developing custom tailored bots and AI agents specific to your business, as well as SIP and VoIP Development, and Mobile Device Management. We developed this bot as well. How can I help you today?"
 
         Speak clearly and calmly.
 
