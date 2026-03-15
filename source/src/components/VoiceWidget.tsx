@@ -44,6 +44,14 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
     useRTVIClientEvent(RTVIEvent.Disconnected, () => setStatus("idle"));
     useRTVIClientEvent(RTVIEvent.BotConnected, () => setStatus("speaking"));
     useRTVIClientEvent(RTVIEvent.BotDisconnected, () => setStatus("connected"));
+
+    // Track when the human SIP agent leaves the room to automatically close the widget
+    useRTVIClientEvent(RTVIEvent.ParticipantLeft, (participant: any) => {
+        if (!participant?.local && participant?.name !== "CryptoVoIP Rep") {
+            // A non-bot remote participant (the human human SIP agent) just hung up!
+            handleDisconnect();
+        }
+    });
     useRTVIClientEvent(RTVIEvent.Error, (msg: any) => {
         console.error("RTVI Error:", msg);
         setStatus("error");
