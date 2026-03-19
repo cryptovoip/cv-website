@@ -58,7 +58,7 @@ function VoiceInterface({ onClose }: { onClose?: () => void }) {
 
     // Track when the human SIP agent leaves the room to automatically close the widget
     useRTVIClientEvent(RTVIEvent.ParticipantLeft, (participant: any) => {
-        if (!participant?.local && participant?.name !== "Shailaja") {
+        if (!participant?.local && participant?.name !== "CryptoVoIP Rep") {
             // A non-bot remote participant (the human human SIP agent) just hung up!
             handleDisconnect();
         }
