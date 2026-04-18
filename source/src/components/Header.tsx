@@ -23,10 +23,11 @@ export default function Header() {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about-us" },
+    { name: "Blog", path: "/blog" },
   ];
 
   const productLinks = [
-    { name: "OpenNVR", path: "/solutions" },
+    { name: "OpenNVR", path: "/opennvr" },
     { name: "CV MDM", path: "/mdm" },
   ];
 
@@ -209,6 +210,9 @@ export default function Header() {
 
             <Link href="/trainings" onClick={() => setIsOpen(false)} className="block text-xl font-medium text-gray-300 hover:text-primary pt-4 border-t border-white/10">
               Trainings
+            </Link>
+            <Link href="/blog" onClick={() => setIsOpen(false)} className="block text-xl font-medium text-gray-300 hover:text-primary">
+              Blog
             </Link>
             <Link href="/contact" onClick={() => setIsOpen(false)} className="block text-xl font-medium text-gray-300 hover:text-primary">
               Contact

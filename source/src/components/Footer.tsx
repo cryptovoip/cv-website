@@ -15,8 +15,9 @@ export default function Footer() {
                         <h4 className="text-lg font-bold text-white mb-4">Quick Links</h4>
                         <ul className="space-y-2">
                             <li><Link href="/about-us" className="hover:text-primary transition">About Us</Link></li>
-                            <li><Link href="/solutions" className="hover:text-primary transition">OpenNVR</Link></li>
+                            <li><Link href="/opennvr" className="hover:text-primary transition">OpenNVR</Link></li>
                             <li><Link href="/mdm" className="hover:text-primary transition">CV MDM</Link></li>
+                            <li><Link href="/blog" className="hover:text-primary transition">Blog</Link></li>
                         </ul>
                     </div>
                     <div>
