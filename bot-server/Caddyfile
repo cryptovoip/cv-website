@@ -1,0 +1,5 @@
+# Caddy automatically obtains and renews a Let's Encrypt TLS certificate
+# for this hostname. Change the hostname if you use a different subdomain.
+bot.cryptovoips.com {
+    reverse_proxy bot-server:8000
+}

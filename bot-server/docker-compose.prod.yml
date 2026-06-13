@@ -1,0 +1,38 @@
+# Production stack: the bot-server behind a Caddy reverse proxy that
+# terminates HTTPS (automatic Let's Encrypt certs).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Requires:
+#   - A DNS A record:  bot.cryptovoips.com -> <this VPS public IP>
+#   - Ports 80 and 443 open on the VPS firewall
+#   - A populated .env file (copy from .env.example)
+
+services:
+  bot-server:
+    build: .
+    container_name: cryptovoip-bot
+    env_file:
+      - .env
+    restart: unless-stopped
+    # No host port published — only Caddy talks to it over the internal network.
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: cryptovoip-caddy
+    restart: unless-stopped
+    depends_on:
+      - bot-server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
