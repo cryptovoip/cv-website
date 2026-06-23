@@ -1,7 +1,7 @@
 # Deploying the bot-server on a VPS (Docker + nginx HTTPS)
 
 This deploys the FastAPI orchestrator + Pipecat bot behind the host's existing
-nginx, which terminates TLS at `https://bot.cryptovoips.com`.
+nginx, which terminates TLS at `https://bot.cryptovoip.in`.
 
 ## 0. Prerequisites
 - A Linux VPS (Ubuntu 22.04/24.04 assumed) with a public IP.
@@ -16,7 +16,7 @@ At your DNS provider (BigRock), add an **A** record:
 |------|-------|------------------|
 | A    | `bot` | `<VPS public IP>`|
 
-Wait until `nslookup bot.cryptovoips.com` returns the VPS IP before running certbot.
+Wait until `nslookup bot.cryptovoip.in` returns the VPS IP before running certbot.
 
 ## 2. Install Docker on the VPS (if not already installed)
 ```bash
@@ -48,16 +48,16 @@ The bot-server now listens on `127.0.0.1:8000` (localhost only — not exposed t
 
 ## 6. Configure nginx
 ```bash
-sudo cp nginx-cryptovoips.conf /etc/nginx/sites-available/bot.cryptovoips.com
-sudo ln -s /etc/nginx/sites-available/bot.cryptovoips.com \
-           /etc/nginx/sites-enabled/bot.cryptovoips.com
+sudo cp nginx-bot.cryptovoip.in.conf /etc/nginx/sites-available/bot.cryptovoip.in
+sudo ln -s /etc/nginx/sites-available/bot.cryptovoip.in \
+           /etc/nginx/sites-enabled/bot.cryptovoip.in
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
 ## 7. Issue a Let's Encrypt certificate with certbot
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d bot.cryptovoips.com
+sudo certbot --nginx -d bot.cryptovoip.in
 ```
 certbot will auto-patch the nginx config with the certificate paths and set up auto-renewal.
 
@@ -65,7 +65,7 @@ certbot will auto-patch the nginx config with the certificate paths and set up a
 ```bash
 docker compose -f docker-compose.prod.yml ps           # container "Up"
 docker compose -f docker-compose.prod.yml logs -f bot-server
-curl https://bot.cryptovoips.com/connect -X POST \
+curl https://bot.cryptovoip.in/connect -X POST \
      -H "Content-Type: application/json" -d '{}'
 # expect 400 "A valid email address is required" — proves HTTPS is working
 ```
@@ -73,7 +73,7 @@ curl https://bot.cryptovoips.com/connect -X POST \
 ## 9. Connect the website to it
 On Vercel (project `source`) set:
 ```
-NEXT_PUBLIC_BOT_BACKEND_URL = https://bot.cryptovoips.com
+NEXT_PUBLIC_BOT_BACKEND_URL = https://bot.cryptovoip.in
 ```
 then redeploy. The voice widget will now hit the live bot.
 
@@ -84,7 +84,7 @@ cd bot-server && docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ## Notes
-- To change the hostname, edit `nginx-cryptovoips.conf` and update the A record together.
+- To change the hostname, edit `nginx-bot.cryptovoip.in.conf` and update the A record together.
 - If you change `ALLOWED_ORIGINS` in `.env`, restart the container:
   `docker compose -f docker-compose.prod.yml restart bot-server`
 - `bot_output.log` (per-call bot logs) lives inside the container;
