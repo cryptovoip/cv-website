@@ -24,6 +24,7 @@ from pipecat.processors.aggregators.llm_response_universal import LLMContextAggr
 from pipecat.frames.frames import LLMMessagesUpdateFrame
 from pipecat.services.llm_service import FunctionCallParams
 from pipecat.processors.user_idle_processor import UserIdleProcessor
+from pipecat.adapters.schemas.function_schema import FunctionSchema
 
 # ── Explicit OpenAI-format tool schemas ──────────────────────────────────────
 # Using explicit dicts (not ToolsSchema standard_tools) so the LLM receives
@@ -304,7 +305,16 @@ async def main():
 
     # ── Context with explicit tool schemas ────────────────────────────────────
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    context = LLMContext(messages, ToolsSchema(standard_tools=TOOLS))
+    function_schemas = [
+        FunctionSchema(
+            name=t["function"]["name"],
+            description=t["function"]["description"],
+            properties=t["function"]["parameters"]["properties"],
+            required=t["function"]["parameters"].get("required", []),
+        )
+        for t in TOOLS
+    ]
+    context = LLMContext(messages, ToolsSchema(standard_tools=function_schemas))
     context_aggregator = LLMContextAggregatorPair(context)
 
     call_state = {
