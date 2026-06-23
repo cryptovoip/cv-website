@@ -1,11 +1,12 @@
-# Deploying the bot-server on a VPS (Docker + Caddy HTTPS)
+# Deploying the bot-server on a VPS (Docker + nginx HTTPS)
 
-This deploys the FastAPI orchestrator + Pipecat bot behind Caddy, which gives
-automatic HTTPS at `https://bot.cryptovoips.com`.
+This deploys the FastAPI orchestrator + Pipecat bot behind the host's existing
+nginx, which terminates TLS at `https://bot.cryptovoips.com`.
 
 ## 0. Prerequisites
 - A Linux VPS (Ubuntu 22.04/24.04 assumed) with a public IP.
 - ~2 GB RAM minimum (model loading + a subprocess per call).
+- nginx already installed and running on the VPS.
 - API keys: Daily, OpenAI, Deepgram, Cartesia, and either a Resend API key (recommended) or SMTP credentials.
 
 ## 1. Point DNS at the VPS
@@ -15,14 +16,12 @@ At your DNS provider (BigRock), add an **A** record:
 |------|-------|------------------|
 | A    | `bot` | `<VPS public IP>`|
 
-So `bot.cryptovoips.com` resolves to the server. Wait until
-`nslookup bot.cryptovoips.com` returns the VPS IP before step 5
-(Caddy needs it to issue the certificate).
+Wait until `nslookup bot.cryptovoips.com` returns the VPS IP before running certbot.
 
-## 2. Install Docker on the VPS
+## 2. Install Docker on the VPS (if not already installed)
 ```bash
 curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER   # then log out/in so the group applies
+sudo usermod -aG docker $USER   # log out/in so the group applies
 ```
 
 ## 3. Open the firewall
@@ -38,26 +37,40 @@ sudo ufw enable
 git clone https://github.com/cryptovoip/cv-website.git
 cd cv-website/bot-server
 cp .env.example .env
-nano .env          # fill in every key; set ALLOWED_ORIGINS to your live domains
+nano .env   # fill in every key — no quotes around values
 ```
 
-## 5. Build and start
+## 5. Build and start the bot container
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
-Caddy will fetch a Let's Encrypt certificate for `bot.cryptovoips.com`
-automatically (this needs DNS from step 1 to be live and ports 80/443 open).
+The bot-server now listens on `127.0.0.1:8000` (localhost only — not exposed to the internet directly).
 
-## 6. Verify
+## 6. Configure nginx
 ```bash
-docker compose -f docker-compose.prod.yml ps           # both containers "Up"
+sudo cp nginx-cryptovoips.conf /etc/nginx/sites-available/bot.cryptovoips.com
+sudo ln -s /etc/nginx/sites-available/bot.cryptovoips.com \
+           /etc/nginx/sites-enabled/bot.cryptovoips.com
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+## 7. Issue a Let's Encrypt certificate with certbot
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d bot.cryptovoips.com
+```
+certbot will auto-patch the nginx config with the certificate paths and set up auto-renewal.
+
+## 8. Verify
+```bash
+docker compose -f docker-compose.prod.yml ps           # container "Up"
 docker compose -f docker-compose.prod.yml logs -f bot-server
 curl https://bot.cryptovoips.com/connect -X POST \
      -H "Content-Type: application/json" -d '{}'
-# expect 400 "A valid email address is required" — proves it's reachable over HTTPS
+# expect 400 "A valid email address is required" — proves HTTPS is working
 ```
 
-## 7. Connect the website to it
+## 9. Connect the website to it
 On Vercel (project `source`) set:
 ```
 NEXT_PUBLIC_BOT_BACKEND_URL = https://bot.cryptovoips.com
@@ -71,6 +84,9 @@ cd bot-server && docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 ## Notes
-- To change the hostname, edit `Caddyfile` and the A record together.
-- If you change `ALLOWED_ORIGINS` in `.env`, restart: `docker compose -f docker-compose.prod.yml restart bot-server`.
-- `bot_output.log` (per-call bot logs) lives inside the container; `docker compose logs bot-server` is the main log.
+- To change the hostname, edit `nginx-cryptovoips.conf` and update the A record together.
+- If you change `ALLOWED_ORIGINS` in `.env`, restart the container:
+  `docker compose -f docker-compose.prod.yml restart bot-server`
+- `bot_output.log` (per-call bot logs) lives inside the container;
+  `docker compose -f docker-compose.prod.yml logs bot-server` is the main log.
+- nginx access/error logs are at `/var/log/nginx/`.
