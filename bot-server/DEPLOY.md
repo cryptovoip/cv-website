@@ -6,7 +6,7 @@ automatic HTTPS at `https://bot.cryptovoips.com`.
 ## 0. Prerequisites
 - A Linux VPS (Ubuntu 22.04/24.04 assumed) with a public IP.
 - ~2 GB RAM minimum (model loading + a subprocess per call).
-- API keys: Daily, OpenAI, Deepgram, Cartesia, and SMTP creds.
+- API keys: Daily, OpenAI, Deepgram, Cartesia, and either a Resend API key (recommended) or SMTP credentials.
 
 ## 1. Point DNS at the VPS
 At your DNS provider (BigRock), add an **A** record:

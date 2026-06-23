@@ -3,6 +3,7 @@ import os
 import sys
 import smtplib
 import requests
+import httpx
 from email.message import EmailMessage
 from dotenv import load_dotenv
 import argparse
@@ -352,11 +353,7 @@ async def main():
 
         print(f"Callback request — Name: {name}, Email: {email_addr or '—'}, Phone: {phone or '—'}", flush=True)
 
-        msg = EmailMessage()
-        msg["Subject"] = f"[CryptoVoIP Bot] Callback Request from {name}"
-        msg["From"]    = os.getenv("SMTP_USER", "bot@cryptovoip.in")
-        msg["To"]      = "contact@cryptovoip.in"
-        msg.set_content(
+        email_body = (
             f"New callback request received via the CryptoVoIP voice assistant.\n\n"
             f"Name:    {name}\n"
             f"Email:   {email_addr  or 'Not provided'}\n"
@@ -364,22 +361,51 @@ async def main():
             f"Company: {company     or 'Not provided'}\n"
             f"Purpose: {reason      or 'Not provided'}\n"
         )
+        subject    = f"[CryptoVoIP Bot] Callback Request from {name}"
+        to_addr    = "contact@cryptovoip.in"
 
-        smtp_server = os.getenv("SMTP_SERVER", "cryptovoip.in")
-        smtp_port   = int(os.getenv("SMTP_PORT", "465"))
-        smtp_user   = os.getenv("SMTP_USER")
-        smtp_pass   = os.getenv("SMTP_PASS")
+        resend_key = os.getenv("RESEND_API_KEY")
+        smtp_user  = os.getenv("SMTP_USER")
+        smtp_pass  = os.getenv("SMTP_PASS")
 
-        if smtp_user and smtp_pass:
+        if resend_key:
+            # ── Resend (preferred) ────────────────────────────────────────────
             try:
+                resp = httpx.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {resend_key}"},
+                    json={
+                        "from":    os.getenv("RESEND_FROM", "bot@cryptovoips.com"),
+                        "to":      [to_addr],
+                        "subject": subject,
+                        "text":    email_body,
+                    },
+                    timeout=10,
+                )
+                resp.raise_for_status()
+                print(f"Callback email sent via Resend for {name}", flush=True)
+            except Exception as e:
+                print(f"Failed to send email via Resend: {e}", flush=True)
+
+        elif smtp_user and smtp_pass:
+            # ── SMTP fallback (legacy) ────────────────────────────────────────
+            smtp_server = os.getenv("SMTP_SERVER", "cryptovoip.in")
+            smtp_port   = int(os.getenv("SMTP_PORT", "465"))
+            try:
+                msg = EmailMessage()
+                msg["Subject"] = subject
+                msg["From"]    = smtp_user
+                msg["To"]      = to_addr
+                msg.set_content(email_body)
                 with smtplib.SMTP_SSL(smtp_server, smtp_port) as server:
                     server.login(smtp_user, smtp_pass)
                     server.send_message(msg)
-                print(f"Callback email sent for {name} <{email_addr}>", flush=True)
+                print(f"Callback email sent via SMTP for {name} <{email_addr}>", flush=True)
             except Exception as e:
-                print(f"Failed to send email: {e}", flush=True)
+                print(f"Failed to send email via SMTP: {e}", flush=True)
+
         else:
-            print("SMTP credentials not configured — skipping email.", flush=True)
+            print("No email provider configured (set RESEND_API_KEY or SMTP_USER+SMTP_PASS) — skipping email.", flush=True)
 
         await params.result_callback(
             f"Details recorded for {name}. Now ask: 'Is there anything else I can help you with?' "
