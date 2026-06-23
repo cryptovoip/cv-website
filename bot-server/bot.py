@@ -19,7 +19,7 @@ from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.transports.daily.transport import DailyParams, DailyTransport
 from pipecat.audio.vad.silero import SileroVADAnalyzer
 from pipecat.processors.audio.vad_processor import VADProcessor
-from pipecat.processors.aggregators.llm_context import LLMContext
+from pipecat.processors.aggregators.llm_context import LLMContext, ToolsSchema
 from pipecat.processors.aggregators.llm_response_universal import LLMContextAggregatorPair
 from pipecat.frames.frames import LLMMessagesUpdateFrame
 from pipecat.services.llm_service import FunctionCallParams
@@ -304,7 +304,7 @@ async def main():
 
     # ── Context with explicit tool schemas ────────────────────────────────────
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    context = LLMContext(messages, TOOLS)
+    context = LLMContext(messages, ToolsSchema(standard_tools=TOOLS))
     context_aggregator = LLMContextAggregatorPair(context)
 
     call_state = {
